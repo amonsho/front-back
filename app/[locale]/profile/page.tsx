@@ -15,7 +15,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getImageUrl, API_URL } from "@/lib/api/config"
 import { getAccessToken } from "@/lib/api/client"
 import { toast } from "sonner"
-import { Loader2, Upload, User, CheckCircle2 } from "lucide-react"
+import { Loader2, Upload, User, CheckCircle2, ShieldCheck, ShieldAlert, Mail } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function ProfilePage() {
   const t = useTranslations("profile")
@@ -150,8 +152,31 @@ export default function ProfilePage() {
           </div>
           <div>
             <Label className="text-muted-foreground">Role</Label>
-            <p className="font-medium">{user.role}</p>
+            <p className="font-medium capitalize">{user.role}</p>
           </div>
+          <div>
+            <Label className="text-muted-foreground">Verification Status</Label>
+            <div className="mt-1 flex items-center gap-2">
+              {user.is_verified ? (
+                <Badge variant="outline" className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+                  <ShieldCheck className="mr-1 h-3 w-3" /> Verified
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                  <ShieldAlert className="mr-1 h-3 w-3" /> Not Verified
+                </Badge>
+              )}
+            </div>
+          </div>
+          {!user.is_verified && (
+            <Alert className="bg-yellow-50 border-yellow-200 text-yellow-800">
+              <Mail className="h-4 w-4 text-yellow-700" />
+              <AlertTitle>Action Required</AlertTitle>
+              <AlertDescription>
+                Please check your email <strong>{user.email}</strong> to verify your account and unlock all features.
+              </AlertDescription>
+            </Alert>
+          )}
           <div>
             <Label className="text-muted-foreground">Google Account</Label>
             {user.google_id ? (

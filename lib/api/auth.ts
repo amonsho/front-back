@@ -76,3 +76,8 @@ export async function loginWithGoogleIdToken(idToken: string): Promise<TokenPair
   saveTokens(tokens)
   return tokens
 }
+
+// Verify email with token
+export async function verifyEmail(token: string): Promise<{ message: string }> {
+  return api.get<{ message: string }>(`/auth/verify?token=${token}`)
+}

@@ -8,6 +8,7 @@ export interface User {
   role: UserRole
   avatar?: string | null
   google_id?: string | null
+  is_verified: boolean
   created_at: string
 }
 
