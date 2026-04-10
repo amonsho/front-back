@@ -75,9 +75,8 @@ export interface HotelUpdate {
 export interface Room {
   id: number
   hotel_id: number
-  name?: string
-  description?: string | null
   room_type: string
+  number_room: number
   price: number
   wifi: boolean
   photo?: string | null
@@ -86,6 +85,7 @@ export interface Room {
 export interface RoomCreate {
   hotel_id: number
   room_type: string
+  number_room: number
   price: number
   wifi: boolean
   photo: File
@@ -93,6 +93,7 @@ export interface RoomCreate {
 
 export interface RoomUpdate {
   room_type?: string
+  number_room?: number
   price?: number
   wifi?: boolean
   photo?: File

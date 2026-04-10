@@ -14,6 +14,12 @@ export async function getHotels(
   return api.get<Hotel[]>("/hotel/get_all", params)
 }
 
+// Search hotels
+export async function searchHotels(q: string): Promise<Hotel[]> {
+  const response = await api.get<{ results: Hotel[] }>("/hotel/search_hotels", { q })
+  return response.results
+}
+
 // Get hotel by ID
 export async function getHotel(id: number): Promise<Hotel> {
   return api.get<Hotel>(`/hotel/${id}`)

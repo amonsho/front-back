@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
-import type { Hotel, PaginatedResponse } from "@/lib/types"
-import { getHotels } from "@/lib/api/hotels"
+import type { Hotel } from "@/lib/types"
+import { getHotels, searchHotels } from "@/lib/api/hotels"
 import { HotelCard } from "@/components/hotels/hotel-card"
 import { HotelSearch } from "@/components/hotels/hotel-search"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { ChevronLeft, ChevronRight, Building2 } from "lucide-react"
 
 interface HotelsListProps {
   locale: string
+  initialQuery?: string
   initialCity?: string
   initialCountry?: string
   initialPage?: number
@@ -78,23 +79,32 @@ const demoHotels: Hotel[] = [
   },
 ]
 
-export function HotelsList({ locale, initialCity, initialCountry, initialPage = 1 }: HotelsListProps) {
+export function HotelsList({ locale, initialQuery, initialCity, initialCountry, initialPage = 1 }: HotelsListProps) {
   const t = useTranslations("hotels")
   const tCommon = useTranslations("common")
   const [page, setPage] = useState(initialPage)
+  const [query, setQuery] = useState(initialQuery)
   const [city, setCity] = useState(initialCity)
   const [country, setCountry] = useState(initialCountry)
 
   // Update filters when URL params change
   useEffect(() => {
+    setQuery(initialQuery)
     setCity(initialCity)
     setCountry(initialCountry)
     setPage(1)
-  }, [initialCity, initialCountry])
+  }, [initialQuery, initialCity, initialCountry])
 
   const { data: hotels, error, isLoading } = useSWR<Hotel[]>(
-    ["hotels", page, city, country],
-    () => getHotels(ITEMS_PER_PAGE, (page - 1) * ITEMS_PER_PAGE, city, country),
+    ["hotels", page, query, city, country],
+    async () => {
+      // If there's a global query, use the search endpoint
+      if (query) {
+        return searchHotels(query)
+      }
+      // Otherwise use the filtered list endpoint
+      return getHotels(ITEMS_PER_PAGE, (page - 1) * ITEMS_PER_PAGE, city, country)
+    },
     {
       fallbackData: demoHotels,
       revalidateOnFocus: false,
@@ -116,7 +126,12 @@ export function HotelsList({ locale, initialCity, initialCountry, initialPage = 
     <div className="space-y-6">
       {/* Search/Filters */}
       <div className="rounded-lg border bg-card p-4">
-        <HotelSearch locale={locale} initialCity={city} initialCountry={country} />
+        <HotelSearch 
+          locale={locale} 
+          initialQuery={query}
+          initialCity={city} 
+          initialCountry={country} 
+        />
       </div>
 
       {/* Results */}

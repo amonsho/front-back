@@ -3,12 +3,12 @@ import { HotelsList } from "./hotels-list"
 
 interface HotelsPageProps {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ city?: string; country?: string; page?: string }>
+  searchParams: Promise<{ q?: string; city?: string; country?: string; page?: string }>
 }
 
 export default async function HotelsPage({ params, searchParams }: HotelsPageProps) {
   const { locale } = await params
-  const { city, country, page } = await searchParams
+  const { q, city, country, page } = await searchParams
   setRequestLocale(locale)
   const t = await getTranslations("hotels")
 
@@ -21,6 +21,7 @@ export default async function HotelsPage({ params, searchParams }: HotelsPagePro
 
       <HotelsList
         locale={locale}
+        initialQuery={q}
         initialCity={city}
         initialCountry={country}
         initialPage={page ? parseInt(page) : 1}

@@ -9,35 +9,54 @@ import { Search, X } from "lucide-react"
 
 interface HotelSearchProps {
   locale: string
+  initialQuery?: string
   initialCity?: string
   initialCountry?: string
 }
 
-export function HotelSearch({ locale, initialCity, initialCountry }: HotelSearchProps) {
+export function HotelSearch({ locale, initialQuery, initialCity, initialCountry }: HotelSearchProps) {
   const t = useTranslations("hotels")
+  const tCommon = useTranslations("common")
   const router = useRouter()
+  const [query, setQuery] = useState(initialQuery || "")
   const [city, setCity] = useState(initialCity || "")
   const [country, setCountry] = useState(initialCountry || "")
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     const params = new URLSearchParams()
+    if (query) params.set("q", query)
     if (city) params.set("city", city)
     if (country) params.set("country", country)
-    const query = params.toString()
-    router.push(`/${locale}/hotels${query ? `?${query}` : ""}`)
+    const queryString = params.toString()
+    router.push(`/${locale}/hotels${queryString ? `?${queryString}` : ""}`)
   }
 
   const clearFilters = () => {
+    setQuery("")
     setCity("")
     setCountry("")
     router.push(`/${locale}/hotels`)
   }
 
-  const hasFilters = city || country
+  const hasFilters = query || city || country
 
   return (
-    <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+    <form onSubmit={handleSearch} className="flex flex-col gap-3 lg:flex-row lg:items-end">
+      <div className="flex-[2]">
+        <label className="mb-1.5 block text-sm font-medium text-foreground">
+          {tCommon("search")}
+        </label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder={t("title")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      </div>
       <div className="flex-1">
         <label className="mb-1.5 block text-sm font-medium text-foreground">
           {t("city")}

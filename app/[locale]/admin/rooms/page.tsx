@@ -39,6 +39,7 @@ import type { Room, Hotel } from "@/lib/types"
 interface RoomFormState {
   hotel_id: number
   room_type: string
+  number_room: number
   price: number
   wifi: boolean
   photo: File | null
@@ -61,6 +62,7 @@ export default function AdminRoomsPage() {
   const [form, setForm] = useState<RoomFormState>({
     hotel_id: 0,
     room_type: "",
+    number_room: 0,
     price: 0,
     wifi: true,
     photo: null,
@@ -75,6 +77,7 @@ export default function AdminRoomsPage() {
         // Prepare update data
         const updateData: any = {
           room_type: form.room_type,
+          number_room: form.number_room,
           price: form.price,
           wifi: form.wifi,
         }
@@ -91,6 +94,7 @@ export default function AdminRoomsPage() {
         await createRoom({
           hotel_id: Number(selectedHotel),
           room_type: form.room_type,
+          number_room: form.number_room,
           price: form.price,
           wifi: form.wifi,
           photo: form.photo,
@@ -99,7 +103,7 @@ export default function AdminRoomsPage() {
       mutate()
       setIsOpen(false)
       setEditingRoom(null)
-      setForm({ hotel_id: 0, room_type: "", price: 0, wifi: true, photo: null })
+      setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photo: null })
     } catch (err) {
       console.error("Failed to save room:", err)
     } finally {
@@ -112,6 +116,7 @@ export default function AdminRoomsPage() {
     setForm({
       hotel_id: room.hotel_id,
       room_type: room.room_type,
+      number_room: room.number_room,
       price: room.price,
       wifi: room.wifi,
       photo: null,
@@ -133,7 +138,7 @@ export default function AdminRoomsPage() {
     setIsOpen(open)
     if (!open) {
       setEditingRoom(null)
-      setForm({ hotel_id: 0, room_type: "", price: 0, wifi: true, photo: null })
+      setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photo: null })
     }
   }
 
@@ -174,26 +179,46 @@ export default function AdminRoomsPage() {
                       type="number"
                       min="0"
                       step="0.01"
-                      value={form.price}
-                      onChange={(e) =>
-                        setForm({ ...form, price: parseFloat(e.target.value) })
-                      }
+                      value={isNaN(form.price) ? "" : form.price}
+                      onChange={(e) => {
+                        const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                        setForm({ ...form, price: val });
+                      }}
                       required
                     />
                   </div>
                 </div>
-                
-                <div className="flex items-center space-x-2 py-2">
-                  <input
-                    type="checkbox"
-                    id="wifi"
-                    className="h-4 w-4 rounded border-gray-300"
-                    checked={form.wifi}
-                    onChange={(e) => setForm({ ...form, wifi: e.target.checked })}
-                  />
-                  <Label htmlFor="wifi" className="flex items-center gap-2">
-                    <Wifi className="h-4 w-4" /> Free WiFi Available
-                  </Label>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="number_room">Room Number</Label>
+                    <Input
+                      id="number_room"
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 101"
+                      value={isNaN(form.number_room) ? "" : form.number_room}
+                      onChange={(e) => {
+                        const val = e.target.value === "" ? 0 : parseInt(e.target.value);
+                        setForm({ ...form, number_room: val });
+                      }}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2 flex items-end">
+                    <div className="flex items-center space-x-2 py-3">
+                      <input
+                        type="checkbox"
+                        id="wifi"
+                        className="h-4 w-4 rounded border-gray-300"
+                        checked={form.wifi}
+                        onChange={(e) => setForm({ ...form, wifi: e.target.checked })}
+                      />
+                      <Label htmlFor="wifi" className="flex items-center gap-2">
+                        <Wifi className="h-4 w-4" /> Free WiFi
+                      </Label>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -256,6 +281,7 @@ export default function AdminRoomsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
+                    <TableHead>Room #</TableHead>
                     <TableHead>Photo</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Price</TableHead>
@@ -267,6 +293,7 @@ export default function AdminRoomsPage() {
                   {rooms.map((room) => (
                     <TableRow key={room.id}>
                       <TableCell>{room.id}</TableCell>
+                      <TableCell className="font-bold">{room.number_room}</TableCell>
                       <TableCell>
                         {room.photo ? (
                           <div className="h-10 w-10 overflow-hidden rounded-md bg-muted">

@@ -25,6 +25,7 @@ export async function createRoom(data: RoomCreate): Promise<Room> {
   const formData = new FormData()
   formData.append("hotel_id", data.hotel_id.toString())
   formData.append("room_type", data.room_type)
+  formData.append("number_room", data.number_room.toString())
   formData.append("price", data.price.toString())
   formData.append("wifi", data.wifi.toString())
   formData.append("photo", data.photo)
@@ -36,6 +37,7 @@ export async function createRoom(data: RoomCreate): Promise<Room> {
 export async function updateRoom(id: number, data: RoomUpdate): Promise<Room> {
   const formData = new FormData()
   if (data.room_type) formData.append("room_type", data.room_type)
+  if (data.number_room !== undefined) formData.append("number_room", data.number_room.toString())
   if (data.price !== undefined) formData.append("price", data.price.toString())
   if (data.wifi !== undefined) formData.append("wifi", data.wifi.toString())
   if (data.photo) formData.append("photo", data.photo)
