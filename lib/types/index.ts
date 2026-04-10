@@ -157,6 +157,8 @@ export interface ApiError {
 // Reports
 export interface HotelsCountReport {
   total_hotels: number
+  total_rooms: number
+  total_users: number
   by_city: Record<string, number>
   by_country: Record<string, number>
 }

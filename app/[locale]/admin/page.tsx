@@ -22,28 +22,34 @@ export default function AdminDashboardPage() {
     "hotels-report",
     () => getHotelsCountReport(),
     {
-      fallbackData: { total_hotels: demoStats.total_hotels, by_city: {}, by_country: {} },
+      fallbackData: { 
+        total_hotels: demoStats.total_hotels, 
+        total_rooms: demoStats.total_rooms,
+        total_users: demoStats.total_users,
+        by_city: {}, 
+        by_country: {} 
+      },
     }
   )
 
   const stats = [
     {
       title: t("totalHotels"),
-      value: report?.total_hotels || demoStats.total_hotels,
+      value: report?.total_hotels ?? demoStats.total_hotels,
       icon: Building2,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
       title: t("totalRooms"),
-      value: demoStats.total_rooms,
+      value: report?.total_rooms ?? demoStats.total_rooms,
       icon: Bed,
       color: "text-green-600",
       bgColor: "bg-green-100",
     },
     {
       title: t("totalUsers"),
-      value: demoStats.total_users,
+      value: report?.total_users ?? demoStats.total_users,
       icon: Users,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
