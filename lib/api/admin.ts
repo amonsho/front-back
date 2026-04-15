@@ -1,5 +1,6 @@
 import { api } from "./client"
 import type { User, UserRole, HotelsCountReport, Booking } from "@/lib/types"
+import { deleteBooking } from "./bookings"
 
 // Get all users (admin)
 export async function getUsers(limit = 100, offset = 0): Promise<User[]> {
@@ -24,4 +25,20 @@ export async function getHotelsCountReport(): Promise<HotelsCountReport> {
 // Get all bookings (admin)
 export async function getAllBookings(limit = 100, offset = 0): Promise<Booking[]> {
   return api.get<Booking[]>("/booking/all", { limit, offset })
+}
+
+// Hard delete booking (admin only — no refund)
+export { deleteBooking }
+
+// Create payment (Stripe checkout session)
+export async function createPayment(
+  bookingId: number,
+  amount: number,
+  provider = "stripe"
+): Promise<{ checkout_url: string; session_id?: string }> {
+  return api.post("/payment/payments/create", {
+    booking_id: bookingId,
+    amount,
+    provider,
+  })
 }

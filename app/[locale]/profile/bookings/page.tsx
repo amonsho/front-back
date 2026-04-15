@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { getMyBookings, cancelBooking } from "@/lib/api/bookings"
+import { createPayment } from "@/lib/api/admin"
 import { BookingCard } from "@/components/booking/booking-card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -23,70 +24,16 @@ import { toast } from "sonner"
 import { CalendarDays, Loader2 } from "lucide-react"
 import type { Booking } from "@/lib/types"
 
-// Demo bookings
-const demoBookings: Booking[] = [
-  {
-    id: 1,
-    user_id: 1,
-    room_id: 1,
-    date_from: "2024-03-15",
-    date_to: "2024-03-18",
-    total_price: 750,
-    status: "confirmed",
-    guests: 2,
-    created_at: "2024-02-20",
-    room: {
-      id: 1,
-      hotel_id: 1,
-      room_type: "Deluxe",
-      price: 250,
-      wifi: true,
-      photo: null,
-    },
-    hotel: {
-      id: 1,
-      name: "Grand Plaza Hotel",
-      city: "New York",
-      address: "123 Fifth Avenue",
-    },
-  },
-  {
-    id: 2,
-    user_id: 1,
-    room_id: 2,
-    date_from: "2024-04-01",
-    date_to: "2024-04-05",
-    total_price: 720,
-    status: "pending",
-    guests: 2,
-    created_at: "2024-02-25",
-    room: {
-      id: 2,
-      hotel_id: 2,
-      room_type: "Suite",
-      price: 180,
-      wifi: true,
-      photo: null,
-    },
-    hotel: {
-      id: 2,
-      name: "Seaside Resort",
-      city: "Miami",
-      address: "456 Ocean Drive",
-    },
-  },
-]
-
 export default function BookingsPage() {
   const t = useTranslations("myBookings")
   const { user, isLoading: authLoading } = useAuth()
   const [cancelId, setCancelId] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [payingId, setPayingId] = useState<number | null>(null)
 
   const { data: bookings, isLoading, mutate } = useSWR(
     user ? "my-bookings" : null,
-    () => getMyBookings(),
-    { fallbackData: demoBookings }
+    () => getMyBookings()
   )
 
   const handleCancel = async () => {
@@ -94,14 +41,41 @@ export default function BookingsPage() {
 
     setIsDeleting(true)
     try {
-      await cancelBooking(cancelId)
-      toast.success("Booking cancelled successfully")
+      const result = await cancelBooking(cancelId)
+      if (result.status === "already cancelled") {
+        toast.info("This booking was already cancelled")
+      } else if (result.refund === "success") {
+        toast.success("Booking cancelled and refund initiated")
+      } else {
+        toast.success("Booking cancelled successfully")
+      }
       mutate()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to cancel booking")
     } finally {
       setIsDeleting(false)
       setCancelId(null)
+    }
+  }
+
+  const handlePay = async (booking: Booking) => {
+    if (!booking.total_price) {
+      toast.error("Cannot process payment: price not available")
+      return
+    }
+    setPayingId(booking.id)
+    try {
+      const result = await createPayment(booking.id, booking.total_price)
+      // Redirect to Stripe checkout
+      if (result.checkout_url) {
+        window.location.href = result.checkout_url
+      } else {
+        toast.error("Payment session not received")
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Payment failed")
+    } finally {
+      setPayingId(null)
     }
   }
 
@@ -117,6 +91,9 @@ export default function BookingsPage() {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <p className="text-muted-foreground">Please sign in to view your bookings</p>
+        <Button asChild className="mt-4">
+          <Link href="/en/auth/login">Sign In</Link>
+        </Button>
       </div>
     )
   }
@@ -128,7 +105,7 @@ export default function BookingsPage() {
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full" />
+            <Skeleton key={i} className="h-44 w-full" />
           ))}
         </div>
       ) : !bookings || bookings.length === 0 ? (
@@ -149,9 +126,19 @@ export default function BookingsPage() {
               key={booking.id}
               booking={booking}
               onCancel={(id) => setCancelId(id)}
+              onPay={handlePay}
               isDeleting={isDeleting && cancelId === booking.id}
             />
           ))}
+        </div>
+      )}
+
+      {payingId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3 rounded-lg border bg-card p-8 shadow-lg">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Redirecting to payment…</p>
+          </div>
         </div>
       )}
 
@@ -160,16 +147,19 @@ export default function BookingsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("cancelBooking")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("cancelConfirm")}</AlertDialogDescription>
+            <AlertDialogDescription>
+              {t("cancelConfirm")}
+              {" "}If payment was made, a refund will be initiated automatically.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Keep Booking</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancel}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Confirm
+              Yes, Cancel
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

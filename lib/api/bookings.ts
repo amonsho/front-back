@@ -11,7 +11,16 @@ export async function getMyBookings(): Promise<Booking[]> {
   return api.get<Booking[]>("/booking/me")
 }
 
-// Cancel booking
-export async function cancelBooking(id: number): Promise<void> {
+// Cancel booking (calls POST /booking/{id}/cancel — triggers Stripe refund)
+export async function cancelBooking(id: number): Promise<{
+  status: string
+  refund?: string
+  refund_id?: string
+}> {
+  return api.post(`/booking/${id}/cancel`)
+}
+
+// Delete booking — admin only (hard delete, no refund)
+export async function deleteBooking(id: number): Promise<void> {
   await api.delete(`/booking/${id}`)
 }

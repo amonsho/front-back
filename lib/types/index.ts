@@ -83,6 +83,7 @@ export interface Room {
   price: number
   wifi: boolean
   photo?: string | null
+  is_available?: boolean
 }
 
 export interface RoomCreate {
@@ -109,10 +110,10 @@ export interface Booking {
   room_id: number
   date_from: string
   date_to: string
-  total_price: number
+  total_price: number | null
   status: "pending" | "confirmed" | "cancelled"
   guests: number
-  created_at: string
+  created_at?: string | null
   room?: Room
   hotel?: Hotel
 }
@@ -131,7 +132,7 @@ export interface Review {
   hotel_id: number
   rating: number
   comment?: string | null
-  created_at: string
+  created_at?: string | null
   user?: {
     name: string
     avatar?: string | null
@@ -142,6 +143,11 @@ export interface ReviewCreate {
   hotel_id: number
   rating: number
   comment?: string
+}
+
+export interface HotelReviewsResponse {
+  reviews: Review[]
+  average_rating: number
 }
 
 // Pagination

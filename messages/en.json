@@ -165,6 +165,12 @@
     "pricePerNight": "Price per Night",
     "isAvailable": "Available"
   },
+  "ai": {
+    "title": "Booking AI Assistant",
+    "placeholder": "Ask me anything...",
+    "welcome": "Hello! I am your smart Booking04 assistant. How can I help you today?",
+    "error": "Failed to communicate with AI server. Please try again later."
+  },
   "footer": {
     "rights": "All rights reserved",
     "privacy": "Privacy Policy",

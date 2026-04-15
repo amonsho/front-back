@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
-import type { Hotel, Room, Review } from "@/lib/types"
+import type { Hotel, Room, Review, HotelReviewsResponse } from "@/lib/types"
 import { getHotel } from "@/lib/api/hotels"
 import { getRoomsByHotel } from "@/lib/api/rooms"
 import { getReviewsByHotel } from "@/lib/api/reviews"
@@ -30,6 +30,7 @@ const demoHotel: Hotel = {
   id: 1,
   name: "Grand Plaza Hotel",
   city: "New York",
+  country: "USA",
   description:
     "Experience luxury in the heart of Manhattan with stunning city views and world-class amenities. Our hotel offers spacious rooms, fine dining, a rooftop pool, and 24/7 concierge service.",
   address: "123 Fifth Avenue, New York, NY 10010",
@@ -40,41 +41,44 @@ const demoRooms: Room[] = [
   {
     id: 1,
     hotel_id: 1,
-    description: "Spacious room with king bed, city view, and modern amenities.",
+    number_room: 101,
     room_type: "Deluxe",
     price: 250,
     wifi: true,
     photo: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80",
+    is_available: true,
   },
   {
     id: 2,
     hotel_id: 1,
-    description: "Luxury suite with separate living area, premium amenities, and panoramic views.",
+    number_room: 201,
     room_type: "Suite",
     price: 450,
     wifi: true,
     photo: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80",
+    is_available: true,
   },
 ]
 
-const demoReviews: Review[] = [
-  {
-    id: 1,
-    user_id: 1,
-    hotel_id: 1,
-    rating: 5,
-    comment: "Amazing hotel! The staff was incredibly friendly and the room was spotless. Would definitely stay again.",
-    created_at: "2024-02-15",
-  },
-  {
-    id: 2,
-    user_id: 2,
-    hotel_id: 1,
-    rating: 4,
-    comment: "Great location and beautiful rooms. The only downside was the breakfast could use more variety.",
-    created_at: "2024-02-10",
-  },
-]
+const demoReviewsResponse: HotelReviewsResponse = {
+  reviews: [
+    {
+      id: 1,
+      user_id: 1,
+      hotel_id: 1,
+      rating: 5,
+      comment: "Amazing hotel! The staff was incredibly friendly and the room was spotless. Would definitely stay again.",
+    },
+    {
+      id: 2,
+      user_id: 2,
+      hotel_id: 1,
+      rating: 4,
+      comment: "Great location and beautiful rooms. The only downside was the breakfast could use more variety.",
+    },
+  ],
+  average_rating: 4.5,
+}
 
 export function HotelDetails({ hotelId, locale }: HotelDetailsProps) {
   const t = useTranslations("hotelDetails")
@@ -94,17 +98,14 @@ export function HotelDetails({ hotelId, locale }: HotelDetailsProps) {
     { fallbackData: demoRooms }
   )
 
-  const { data: reviewsData, mutate: mutateReviews } = useSWR(
+  const { data: reviewsData, mutate: mutateReviews } = useSWR<HotelReviewsResponse>(
     ["reviews", hotelId],
     () => getReviewsByHotel(hotelId),
-    { fallbackData: demoReviews }
+    { fallbackData: demoReviewsResponse }
   )
 
-  const reviews = Array.isArray(reviewsData) 
-    ? reviewsData 
-    : (reviewsData as any)?.reviews || []
-
-  const averageRating = (reviewsData as any)?.average_rating || null
+  const reviews: Review[] = reviewsData?.reviews ?? []
+  const averageRating: number | null = reviewsData?.average_rating ?? null
 
   const handleBookRoom = (room: Room) => {
     setSelectedRoom(room)

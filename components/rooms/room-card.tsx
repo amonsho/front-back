@@ -48,9 +48,6 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                 </div>
               </div>
             </div>
-            {room.description && (
-              <p className="mt-2 text-sm text-muted-foreground">{room.description}</p>
-            )}
           </CardContent>
           <CardFooter className="flex items-center justify-between border-t p-4">
             <div>
