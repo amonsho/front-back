@@ -33,7 +33,7 @@ export function HotelCard({ hotel, locale }: HotelCardProps) {
         <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
           <MapPin className="h-4 w-4" />
           <span className="line-clamp-1">
-            {hotel.city}
+            {hotel.city}, {hotel.country}
           </span>
         </div>
         {hotel.description && (

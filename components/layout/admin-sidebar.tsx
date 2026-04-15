@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Building2, Bed, Users, ArrowLeft } from "lucide-react"
+import { LayoutDashboard, Building2, Bed, Users, ArrowLeft, CalendarDays } from "lucide-react"
 
 interface AdminSidebarProps {
   locale: string
@@ -20,6 +20,7 @@ export function AdminSidebar({ locale }: AdminSidebarProps) {
     { href: `/${locale}/admin/hotels`, label: t("hotels"), icon: Building2 },
     { href: `/${locale}/admin/rooms`, label: t("rooms"), icon: Bed },
     { href: `/${locale}/admin/users`, label: t("users"), icon: Users },
+    { href: `/${locale}/admin/bookings`, label: t("bookings"), icon: CalendarDays },
   ]
 
   return (

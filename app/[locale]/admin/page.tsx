@@ -7,14 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Building2, Bed, Users, CalendarDays } from "lucide-react"
 
-// Demo stats
-const demoStats = {
-  total_hotels: 12,
-  total_rooms: 48,
-  total_users: 156,
-  total_bookings: 89,
-}
-
 export default function AdminDashboardPage() {
   const t = useTranslations("admin")
 
@@ -23,9 +15,10 @@ export default function AdminDashboardPage() {
     () => getHotelsCountReport(),
     {
       fallbackData: { 
-        total_hotels: demoStats.total_hotels, 
-        total_rooms: demoStats.total_rooms,
-        total_users: demoStats.total_users,
+        total_hotels: 0,
+        total_rooms: 0,
+        total_users: 0,
+        total_bookings: 0,
         by_city: {}, 
         by_country: {} 
       },
@@ -35,33 +28,34 @@ export default function AdminDashboardPage() {
   const stats = [
     {
       title: t("totalHotels"),
-      value: report?.total_hotels ?? demoStats.total_hotels,
+      value: report?.total_hotels ?? 0,
       icon: Building2,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
       title: t("totalRooms"),
-      value: report?.total_rooms ?? demoStats.total_rooms,
+      value: report?.total_rooms ?? 0,
       icon: Bed,
       color: "text-green-600",
       bgColor: "bg-green-100",
     },
     {
       title: t("totalUsers"),
-      value: report?.total_users ?? demoStats.total_users,
+      value: report?.total_users ?? 0,
       icon: Users,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
     },
     {
       title: t("totalBookings"),
-      value: demoStats.total_bookings,
+      value: report?.total_bookings ?? 0,
       icon: CalendarDays,
       color: "text-orange-600",
       bgColor: "bg-orange-100",
     },
   ]
+
 
   return (
     <div>

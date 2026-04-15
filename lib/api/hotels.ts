@@ -31,6 +31,7 @@ export async function createHotel(data: HotelCreate): Promise<Hotel> {
   formData.append("name", data.name)
   formData.append("address", data.address)
   formData.append("city", data.city)
+  formData.append("country", data.country)
   if (data.description) formData.append("description", data.description)
   formData.append("photo", data.photo)
   
@@ -43,6 +44,7 @@ export async function updateHotel(id: number, data: HotelUpdate): Promise<Hotel>
   if (data.name) formData.append("name", data.name)
   if (data.address) formData.append("address", data.address)
   if (data.city) formData.append("city", data.city)
+  if (data.country) formData.append("country", data.country)
   if (data.description) formData.append("description", data.description)
   if (data.photo) formData.append("photo", data.photo)
 

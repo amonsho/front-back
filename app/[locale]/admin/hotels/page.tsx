@@ -32,6 +32,7 @@ interface HotelFormState {
   name: string
   address: string
   city: string
+  country: string
   description: string
   photo: File | null
 }
@@ -50,6 +51,7 @@ export default function AdminHotelsPage() {
     name: "",
     address: "",
     city: "",
+    country: "",
     description: "",
     photo: null,
   })
@@ -81,6 +83,7 @@ export default function AdminHotelsPage() {
           name: form.name,
           address: form.address,
           city: form.city,
+          country: form.country,
           description: form.description,
           photo: form.photo,
         })
@@ -88,7 +91,7 @@ export default function AdminHotelsPage() {
       mutate()
       setIsOpen(false)
       setEditingHotel(null)
-      setForm({ name: "", address: "", city: "", description: "", photo: null })
+      setForm({ name: "", address: "", city: "", country: "", description: "", photo: null })
     } catch (err) {
       console.error("Failed to save hotel:", err)
     } finally {
@@ -102,6 +105,7 @@ export default function AdminHotelsPage() {
       name: hotel.name || "",
       address: hotel.address || "",
       city: hotel.city || "",
+      country: hotel.country || "",
       description: hotel.description || "",
       photo: null, // Keep null, only update if they select a new file
     })
@@ -122,7 +126,7 @@ export default function AdminHotelsPage() {
     setIsOpen(open)
     if (!open) {
       setEditingHotel(null)
-      setForm({ name: "", address: "", city: "", description: "", photo: null })
+      setForm({ name: "", address: "", city: "", country: "", description: "", photo: null })
     }
   }
 
@@ -178,6 +182,15 @@ export default function AdminHotelsPage() {
                   id="city"
                   value={form.city}
                   onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="country">Country</Label>
+                <Input
+                  id="country"
+                  value={form.country}
+                  onChange={(e) => setForm({ ...form, country: e.target.value })}
                   required
                 />
               </div>
@@ -253,7 +266,7 @@ export default function AdminHotelsPage() {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{hotel.name}</TableCell>
-                    <TableCell>{hotel.city}</TableCell>
+                    <TableCell>{hotel.city}, {hotel.country}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
