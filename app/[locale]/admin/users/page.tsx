@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
-import { getUsers, changeUserRole, deleteUser } from "@/lib/api/admin"
+import { getUsers, changeUserRole, deleteUser, getDeletedUsers, restoreUser } from "@/lib/api/admin"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -28,8 +28,12 @@ import type { User, UserRole } from "@/lib/types"
 export default function AdminUsersPage() {
   const t = useTranslations("admin")
   const [updatingRole, setUpdatingRole] = useState<number | null>(null)
+  const [view, setView] = useState<"active" | "deleted">("active")
 
-  const { data: users, error, mutate } = useSWR("admin-users", () => getUsers(100, 0))
+  const { data: users, error, mutate } = useSWR(
+    `admin-users-${view}`, 
+    () => view === "active" ? getUsers(100, 0) : getDeletedUsers(100, 0)
+  )
 
   const handleRoleChange = async (userId: number, role: UserRole) => {
     setUpdatingRole(userId)
@@ -44,12 +48,21 @@ export default function AdminUsersPage() {
   }
 
   const handleDelete = async (userId: number) => {
-    if (!confirm("Are you sure you want to delete this user?")) return
+    if (!confirm(t("confirmDelete") || "Are you sure?")) return
     try {
       await deleteUser(userId)
       mutate()
     } catch (err) {
       console.error("Failed to delete user:", err)
+    }
+  }
+
+  const handleRestore = async (userId: number) => {
+    try {
+      await restoreUser(userId)
+      mutate()
+    } catch (err) {
+      console.error("Failed to restore user:", err)
     }
   }
 
@@ -68,8 +81,24 @@ export default function AdminUsersPage() {
       <h1 className="text-3xl font-bold">{t("users")}</h1>
 
       <Card>
-        <CardHeader>
-          <CardTitle>All Users</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>{view === "active" ? t("users") : t("deletedHotels")}</CardTitle>
+          <div className="flex gap-2">
+            <Button 
+              variant={view === "active" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setView("active")}
+            >
+              {t("activeHotels")}
+            </Button>
+            <Button 
+              variant={view === "deleted" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setView("deleted")}
+            >
+              {t("archive")}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {!users ? (
@@ -133,13 +162,24 @@ export default function AdminUsersPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(user.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      {view === "active" ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(user.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRestore(user.id)}
+                          title={t("restore")}
+                        >
+                          <RefreshCw className="h-4 w-4 text-blue-500" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

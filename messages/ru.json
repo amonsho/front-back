@@ -55,7 +55,11 @@
     "perNight": "за ночь",
     "viewDetails": "Подробнее",
     "rooms": "номеров",
-    "address": "Адрес"
+    "address": "Адрес",
+    "resultsFound": "результатов найдено",
+    "searching": "Поиск отелей...",
+    "listView": "Список",
+    "mapView": "Карта"
   },
   "hotelDetails": {
     "about": "Об отеле",
@@ -163,7 +167,14 @@
     "description": "Описание",
     "roomName": "Название номера",
     "pricePerNight": "Цена за ночь",
-    "isAvailable": "Доступен"
+    "isAvailable": "Доступен",
+    "active": "Активные",
+    "archive": "Архив",
+    "restore": "Восстановить",
+    "activeHotels": "Активные",
+    "deletedHotels": "Удаленные",
+    "roomsList": "Список номеров",
+    "deletedRooms": "Удаленные номера"
   },
   "ai": {
     "title": "Умный помощник",

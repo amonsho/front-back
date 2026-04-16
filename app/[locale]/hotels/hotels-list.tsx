@@ -9,7 +9,9 @@ import { HotelCard } from "@/components/hotels/hotel-card"
 import { HotelSearch } from "@/components/hotels/hotel-search"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ChevronLeft, ChevronRight, Building2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Building2, Map as MapIcon, List as ListIcon } from "lucide-react"
+import MapWrapper from "@/components/map/MapWrapper"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface HotelsListProps {
   locale: string
@@ -92,6 +94,7 @@ export function HotelsList({ locale, initialQuery, initialCity, initialCountry, 
   const [query, setQuery] = useState(initialQuery)
   const [city, setCity] = useState(initialCity)
   const [country, setCountry] = useState(initialCountry)
+  const [view, setView] = useState<"list" | "map">("list")
 
   // Update filters when URL params change
   useEffect(() => {
@@ -140,6 +143,25 @@ export function HotelsList({ locale, initialQuery, initialCity, initialCountry, 
         />
       </div>
 
+      {/* Results Header with Toggle */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">
+          {hotels ? `${hotels.length} ${t("resultsFound") || "отелей найдено"}` : t("searching")}
+        </h2>
+        <Tabs value={view} onValueChange={(v) => setView(v as "list" | "map")} className="w-[200px]">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="list" className="flex items-center gap-2">
+              <ListIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("listView") || "Список"}</span>
+            </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center gap-2">
+              <MapIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("mapView") || "Карта"}</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
       {/* Results */}
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -161,14 +183,20 @@ export function HotelsList({ locale, initialQuery, initialCity, initialCountry, 
         </div>
       ) : (
         <>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {hotels && hotels.map((hotel) => (
-              <HotelCard key={hotel.id} hotel={hotel} locale={locale} />
-            ))}
-          </div>
+          {view === "list" ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {hotels && hotels.map((hotel) => (
+                <HotelCard key={hotel.id} hotel={hotel} locale={locale} />
+              ))}
+            </div>
+          ) : (
+            <div className="h-[600px] w-full overflow-hidden rounded-xl border shadow-lg">
+              <MapWrapper hotels={hotels} locale={locale} />
+            </div>
+          )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
+          {/* Pagination - Only show for list view */}
+          {view === "list" && totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 pt-8">
               <Button
                 variant="outline"

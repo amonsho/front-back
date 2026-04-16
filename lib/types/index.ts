@@ -53,6 +53,8 @@ export interface Hotel {
   city: string
   country: string
   photo?: string | null
+  latitude?: number | null
+  longitude?: number | null
   created_at?: string
 }
 
@@ -62,6 +64,8 @@ export interface HotelCreate {
   address: string
   city: string
   country: string
+  latitude?: number | null
+  longitude?: number | null
   photo: File
 }
 
@@ -71,6 +75,8 @@ export interface HotelUpdate {
   address?: string
   city?: string
   country?: string
+  latitude?: number | null
+  longitude?: number | null
   photo?: File
 }
 

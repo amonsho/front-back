@@ -15,6 +15,14 @@ export async function getRooms(limit = 100, offset = 0): Promise<Room[]> {
   return api.get<Room[]>("/rooms/", { limit, offset })
 }
 
+// Get deleted rooms (admin)
+export async function getDeletedRooms(
+  limit = 100,
+  offset = 0
+): Promise<Room[]> {
+  return api.get<Room[]>("/rooms/deleted", { limit, offset })
+}
+
 // Get room by ID
 export async function getRoom(id: number): Promise<Room> {
   return api.get<Room>(`/rooms/${id}`)
@@ -48,4 +56,9 @@ export async function updateRoom(id: number, data: RoomUpdate): Promise<Room> {
 // Delete room (admin)
 export async function deleteRoom(id: number): Promise<void> {
   await api.delete(`/rooms/${id}`)
+}
+
+// Restore room (admin)
+export async function restoreRoom(id: number): Promise<Room> {
+  return api.post<Room>(`/rooms/${id}/restore`)
 }

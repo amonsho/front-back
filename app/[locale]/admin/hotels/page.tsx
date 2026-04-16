@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
-import { getHotels, createHotel, updateHotel, deleteHotel } from "@/lib/api/hotels"
+import { getHotels, createHotel, updateHotel, deleteHotel, getDeletedHotels, restoreHotel } from "@/lib/api/hotels"
 import { getImageUrl } from "@/lib/api/config"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Pencil, Trash2, Loader2, Image as ImageIcon } from "lucide-react"
+import { Plus, Pencil, Trash2, Loader2, Image as ImageIcon, RefreshCw, Archive } from "lucide-react"
 import type { Hotel } from "@/lib/types"
 
 interface HotelFormState {
@@ -34,6 +34,8 @@ interface HotelFormState {
   city: string
   country: string
   description: string
+  latitude: string
+  longitude: string
   photo: File | null
 }
 
@@ -42,9 +44,12 @@ export default function AdminHotelsPage() {
   const [isOpen, setIsOpen] = useState(false)
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeTab, setActiveTab] = useState<"active" | "deleted">("active")
 
-  const { data: hotels, error, mutate } = useSWR("admin-hotels", () =>
-    getHotels(100, 0)
+
+  const { data: hotels, error, mutate } = useSWR(
+    `admin-hotels-${activeTab}`,
+    () => (activeTab === "active" ? getHotels(100, 0) : getDeletedHotels(100, 0))
   )
 
   const [form, setForm] = useState<HotelFormState>({
@@ -53,6 +58,8 @@ export default function AdminHotelsPage() {
     city: "",
     country: "",
     description: "",
+    latitude: "",
+    longitude: "",
     photo: null,
   })
 
@@ -67,7 +74,10 @@ export default function AdminHotelsPage() {
           name: form.name,
           address: form.address,
           city: form.city,
+          country: form.country,
           description: form.description,
+          latitude: form.latitude ? parseFloat(form.latitude) : null,
+          longitude: form.longitude ? parseFloat(form.longitude) : null,
         }
         if (form.photo) {
           updateData.photo = form.photo
@@ -85,13 +95,15 @@ export default function AdminHotelsPage() {
           city: form.city,
           country: form.country,
           description: form.description,
+          latitude: form.latitude ? parseFloat(form.latitude) : null,
+          longitude: form.longitude ? parseFloat(form.longitude) : null,
           photo: form.photo,
         })
       }
       mutate()
       setIsOpen(false)
       setEditingHotel(null)
-      setForm({ name: "", address: "", city: "", country: "", description: "", photo: null })
+      setForm({ name: "", address: "", city: "", country: "", description: "", latitude: "", longitude: "", photo: null })
     } catch (err) {
       console.error("Failed to save hotel:", err)
     } finally {
@@ -107,13 +119,15 @@ export default function AdminHotelsPage() {
       city: hotel.city || "",
       country: hotel.country || "",
       description: hotel.description || "",
+      latitude: hotel.latitude?.toString() || "",
+      longitude: hotel.longitude?.toString() || "",
       photo: null, // Keep null, only update if they select a new file
     })
     setIsOpen(true)
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure?")) return
+    if (!confirm(t("confirmDelete"))) return
     try {
       await deleteHotel(id)
       mutate()
@@ -122,11 +136,20 @@ export default function AdminHotelsPage() {
     }
   }
 
+  const handleRestore = async (id: number) => {
+    try {
+      await restoreHotel(id)
+      mutate()
+    } catch (err) {
+      console.error("Failed to restore hotel:", err)
+    }
+  }
+
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
     if (!open) {
       setEditingHotel(null)
-      setForm({ name: "", address: "", city: "", country: "", description: "", photo: null })
+      setForm({ name: "", address: "", city: "", country: "", description: "", latitude: "", longitude: "", photo: null })
     }
   }
 
@@ -144,13 +167,28 @@ export default function AdminHotelsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{t("hotels")}</h1>
-        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("addHotel")}
+          <div className="flex gap-2">
+            <Button
+              variant={activeTab === "active" ? "default" : "outline"}
+              onClick={() => setActiveTab("active")}
+            >
+              {t("activeHotels")}
             </Button>
-          </DialogTrigger>
+            <Button
+              variant={activeTab === "deleted" ? "default" : "outline"}
+              onClick={() => setActiveTab("deleted")}
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              {t("deletedHotels")}
+            </Button>
+            <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("addHotel")}
+                </Button>
+              </DialogTrigger>
+
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
@@ -203,6 +241,30 @@ export default function AdminHotelsPage() {
                   rows={4}
                 />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="latitude">Latitude (e.g. 48.8584)</Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="any"
+                    value={form.latitude}
+                    onChange={(e) => setForm({ ...form, latitude: e.target.value })}
+                    placeholder="48.8584"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="longitude">Longitude (e.g. 2.2945)</Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="any"
+                    value={form.longitude}
+                    onChange={(e) => setForm({ ...form, longitude: e.target.value })}
+                    placeholder="2.2945"
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="photo">Photo {editingHotel && "(Leave blank to keep current photo)"}</Label>
                 <Input
@@ -219,12 +281,15 @@ export default function AdminHotelsPage() {
               </Button>
             </form>
           </DialogContent>
-        </Dialog>
+            </Dialog>
+          </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Hotels</CardTitle>
+          <CardTitle>
+            {activeTab === "active" ? t("activeHotels") : t("deletedHotels")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {!hotels ? (
@@ -268,20 +333,33 @@ export default function AdminHotelsPage() {
                     <TableCell className="font-medium">{hotel.name}</TableCell>
                     <TableCell>{hotel.city}, {hotel.country}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(hotel)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(hotel.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      {activeTab === "active" ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(hotel)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(hotel.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRestore(hotel.id)}
+                          title={t("restore")}
+                        >
+                          <RefreshCw className="h-4 w-4 text-primary" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

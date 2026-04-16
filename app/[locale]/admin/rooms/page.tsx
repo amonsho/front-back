@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
-import { getRoomsByHotel, createRoom, updateRoom, deleteRoom } from "@/lib/api/rooms"
+import { getRoomsByHotel, createRoom, updateRoom, deleteRoom, getDeletedRooms, restoreRoom } from "@/lib/api/rooms"
+import { RefreshCw } from "lucide-react"
 import { getHotels } from "@/lib/api/hotels"
 import { getImageUrl } from "@/lib/api/config"
 import { Button } from "@/components/ui/button"
@@ -51,13 +52,21 @@ export default function AdminRoomsPage() {
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState<string>("")
+  const [view, setView] = useState<"active" | "deleted">("active")
 
   const { data: hotels, error: hotelsError } = useSWR<Hotel[]>("admin-hotels", () => getHotels(100, 0))
   
   const { data: rooms, error: roomsError, mutate } = useSWR<Room[]>(
-    selectedHotel ? `admin-rooms-${selectedHotel}` : null,
-    () => getRoomsByHotel(Number(selectedHotel))
+    selectedHotel ? `admin-rooms-${selectedHotel}-${view}` : null,
+    () => view === "active" 
+      ? getRoomsByHotel(Number(selectedHotel))
+      : getDeletedRooms() // Note: Backend returns all deleted rooms, we might want to filter by hotel on frontend if backend doesn't support hotel_id for deleted
   )
+
+  // Filter deleted rooms by hotel if view is 'deleted'
+  const displayedRooms = view === "active" 
+    ? rooms 
+    : rooms?.filter(r => r.hotel_id === Number(selectedHotel))
 
   const [form, setForm] = useState<RoomFormState>({
     hotel_id: 0,
@@ -125,12 +134,21 @@ export default function AdminRoomsPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure?")) return
+    if (!confirm(t("confirmDelete") || "Are you sure?")) return
     try {
       await deleteRoom(id)
       mutate()
     } catch (err) {
       console.error("Failed to delete room:", err)
+    }
+  }
+
+  const handleRestore = async (id: number) => {
+    try {
+      await restoreRoom(id)
+      mutate()
+    } catch (err) {
+      console.error("Failed to restore room:", err)
     }
   }
 
@@ -264,17 +282,33 @@ export default function AdminRoomsPage() {
 
       {selectedHotel && (
         <Card>
-          <CardHeader>
-            <CardTitle>Rooms List</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>{view === "active" ? t("roomsList") || "Rooms List" : t("deletedRooms") || "Deleted Rooms"}</CardTitle>
+            <div className="flex gap-2">
+              <Button 
+                variant={view === "active" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setView("active")}
+              >
+                {t("activeHotels") || "Active"}
+              </Button>
+              <Button 
+                variant={view === "deleted" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setView("deleted")}
+              >
+                {t("archive") || "Archive"}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {!rooms ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
-            ) : rooms.length === 0 ? (
+            ) : displayedRooms?.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                No rooms found for this hotel
+                {view === "active" ? "No rooms found for this hotel" : "No deleted rooms found for this hotel"}
               </p>
             ) : (
               <Table>
@@ -290,7 +324,7 @@ export default function AdminRoomsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rooms.map((room) => (
+                  {displayedRooms?.map((room) => (
                     <TableRow key={room.id}>
                       <TableCell>{room.id}</TableCell>
                       <TableCell className="font-bold">{room.number_room}</TableCell>
@@ -313,20 +347,33 @@ export default function AdminRoomsPage() {
                       <TableCell>${room.price}</TableCell>
                       <TableCell>{room.wifi ? "Yes" : "No"}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(room)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(room.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        {view === "active" ? (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(room)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(room.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRestore(room.id)}
+                            title={t("restore") || "Restore"}
+                          >
+                            <RefreshCw className="h-4 w-4 text-blue-500" />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

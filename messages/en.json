@@ -55,7 +55,11 @@
     "perNight": "per night",
     "viewDetails": "View Details",
     "rooms": "rooms",
-    "address": "Address"
+    "address": "Address",
+    "resultsFound": "results found",
+    "searching": "Searching for hotels...",
+    "listView": "List",
+    "mapView": "Map"
   },
   "hotelDetails": {
     "about": "About",
@@ -163,7 +167,14 @@
     "description": "Description",
     "roomName": "Room Name",
     "pricePerNight": "Price per Night",
-    "isAvailable": "Available"
+    "isAvailable": "Available",
+    "active": "Active",
+    "archive": "Archive",
+    "restore": "Restore",
+    "activeHotels": "Active",
+    "deletedHotels": "Deleted",
+    "roomsList": "Rooms List",
+    "deletedRooms": "Deleted Rooms"
   },
   "ai": {
     "title": "Booking AI Assistant",
