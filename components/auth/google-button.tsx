@@ -42,7 +42,6 @@ export function GoogleButton() {
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={() => toast.error("Google login failed")}
-        useOneTap
         theme="outline"
       />
     </div>

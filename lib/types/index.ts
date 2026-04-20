@@ -85,28 +85,29 @@ export interface Room {
   id: number
   hotel_id: number
   room_type: string
-  number_room: number
+  number_room: number | string
   price: number
   wifi: boolean
-  photo?: string | null
+  photos: string[]
   is_available?: boolean
+  hotel?: Hotel
 }
 
 export interface RoomCreate {
   hotel_id: number
   room_type: string
-  number_room: number
+  number_room: number | string
   price: number
   wifi: boolean
-  photo: File
+  photos: File[]
 }
 
 export interface RoomUpdate {
   room_type?: string
-  number_room?: number
+  number_room?: number | string
   price?: number
   wifi?: boolean
-  photo?: File
+  photos?: File[]
 }
 
 // Booking types

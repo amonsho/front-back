@@ -43,7 +43,7 @@ interface RoomFormState {
   number_room: number
   price: number
   wifi: boolean
-  photo: File | null
+  photos: File[]
 }
 
 export default function AdminRoomsPage() {
@@ -74,7 +74,7 @@ export default function AdminRoomsPage() {
     number_room: 0,
     price: 0,
     wifi: true,
-    photo: null,
+    photos: [],
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,13 +90,13 @@ export default function AdminRoomsPage() {
           price: form.price,
           wifi: form.wifi,
         }
-        if (form.photo) {
-          updateData.photo = form.photo
+        if (form.photos.length > 0) {
+          updateData.photos = form.photos
         }
         await updateRoom(editingRoom.id, updateData)
       } else {
-        if (!form.photo) {
-          alert("Photo is required")
+        if (form.photos.length === 0) {
+          alert("At least one photo is required")
           setIsSubmitting(false)
           return
         }
@@ -106,13 +106,13 @@ export default function AdminRoomsPage() {
           number_room: form.number_room,
           price: form.price,
           wifi: form.wifi,
-          photo: form.photo,
+          photos: form.photos,
         })
       }
       mutate()
       setIsOpen(false)
       setEditingRoom(null)
-      setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photo: null })
+      setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photos: [] })
     } catch (err) {
       console.error("Failed to save room:", err)
     } finally {
@@ -128,7 +128,7 @@ export default function AdminRoomsPage() {
       number_room: room.number_room,
       price: room.price,
       wifi: room.wifi,
-      photo: null,
+      photos: [],
     })
     setIsOpen(true)
   }
@@ -156,7 +156,7 @@ export default function AdminRoomsPage() {
     setIsOpen(open)
     if (!open) {
       setEditingRoom(null)
-      setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photo: null })
+      setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photos: [] })
     }
   }
 
@@ -178,81 +178,115 @@ export default function AdminRoomsPage() {
                   {editingRoom ? t("editRoom") : t("addRoom")}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="room_type">Room Type</Label>
+                    <Label htmlFor="room_type" className="text-sm font-semibold tracking-wide uppercase opacity-70">Тип номера</Label>
                     <Input
                       id="room_type"
-                      placeholder="e.g. Deluxe Suite"
+                      placeholder="Пример: Deluxe Suite"
                       value={form.room_type}
                       onChange={(e) => setForm({ ...form, room_type: e.target.value })}
                       required
+                      className="rounded-xl"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price per night</Label>
+                    <Label htmlFor="price" className="text-sm font-semibold tracking-wide uppercase opacity-70">Цена за ночь ($)</Label>
                     <Input
                       id="price"
                       type="number"
                       min="0"
                       step="0.01"
+                      placeholder="500"
                       value={isNaN(form.price) ? "" : form.price}
                       onChange={(e) => {
                         const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
                         setForm({ ...form, price: val });
                       }}
                       required
+                      className="rounded-xl"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="number_room">Room Number</Label>
+                    <Label htmlFor="number_room" className="text-sm font-semibold tracking-wide uppercase opacity-70">Номер комнаты</Label>
                     <Input
                       id="number_room"
                       type="number"
                       min="1"
-                      placeholder="e.g. 101"
+                      placeholder="Пример: 101"
                       value={isNaN(form.number_room) ? "" : form.number_room}
                       onChange={(e) => {
                         const val = e.target.value === "" ? 0 : parseInt(e.target.value);
                         setForm({ ...form, number_room: val });
                       }}
                       required
+                      className="rounded-xl"
                     />
                   </div>
                   <div className="space-y-2 flex items-end">
-                    <div className="flex items-center space-x-2 py-3">
+                    <div className="flex items-center space-x-2 py-3 px-4 bg-muted/50 rounded-xl w-full">
                       <input
                         type="checkbox"
                         id="wifi"
-                        className="h-4 w-4 rounded border-gray-300"
+                        className="h-5 w-5 rounded border-gray-300"
                         checked={form.wifi}
                         onChange={(e) => setForm({ ...form, wifi: e.target.checked })}
                       />
-                      <Label htmlFor="wifi" className="flex items-center gap-2">
-                        <Wifi className="h-4 w-4" /> Free WiFi
+                      <Label htmlFor="wifi" className="flex items-center gap-2 font-medium">
+                        <Wifi className="h-4 w-4" /> Бесплатный WiFi
                       </Label>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="photo">Room Photo {editingRoom && "(Leave blank to keep current)"}</Label>
+                  <Label htmlFor="photos" className="text-sm font-semibold tracking-wide uppercase opacity-70">
+                    Фотографии номера {editingRoom && "(оставьте пустым для сохранения текущих)"}
+                  </Label>
+                  
+                  {editingRoom && editingRoom.photos && editingRoom.photos.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2 p-2 bg-muted/30 rounded-xl border border-dashed">
+                      {editingRoom.photos.map((photo, i) => (
+                        <div key={i} className="relative h-16 w-16 rounded-lg overflow-hidden border">
+                          <img 
+                            src={getImageUrl(photo, "/placeholder-room.jpg")} 
+                            alt="" 
+                            className="h-full w-full object-cover" 
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <Input
-                    id="photo"
+                    id="photos"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setForm({ ...form, photo: e.target.files?.[0] || null })}
+                    multiple
+                    onChange={(e) => {
+                      const files = e.target.files ? Array.from(e.target.files) : [];
+                      if (files.length > 10) {
+                        alert("Максимум 10 фотографий");
+                        e.target.value = "";
+                        return;
+                      }
+                      setForm({ ...form, photos: files });
+                    }}
                     required={!editingRoom}
+                    className="rounded-xl cursor-pointer"
                   />
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest pl-1">
+                    Можно выбрать до 10 фотографий одновременно
+                  </p>
                 </div>
                 
-                <Button type="submit" disabled={isSubmitting} className="w-full">
+                <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20">
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {editingRoom ? "Update" : "Create"}
+                  {editingRoom ? "Сохранить изменения" : "Добавить новый номер"}
                 </Button>
               </form>
             </DialogContent>
@@ -329,17 +363,22 @@ export default function AdminRoomsPage() {
                       <TableCell>{room.id}</TableCell>
                       <TableCell className="font-bold">{room.number_room}</TableCell>
                       <TableCell>
-                        {room.photo ? (
-                          <div className="h-10 w-10 overflow-hidden rounded-md bg-muted">
-                          <img 
-                            src={getImageUrl(room.photo, "/placeholder-room.jpg")} 
-                            alt={room.room_type} 
-                            className="h-full w-full object-cover" 
-                          />
+                        {room.photos && room.photos.length > 0 ? (
+                          <div className="relative h-10 w-10 overflow-hidden rounded-md bg-muted">
+                            <img 
+                              src={getImageUrl(room.photos[0], "/placeholder-room.jpg")} 
+                              alt={room.room_type} 
+                              className="h-full w-full object-cover" 
+                            />
+                            {room.photos.length > 1 && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-[10px] font-bold text-white backdrop-blur-[1px]">
+                                +{room.photos.length - 1}
+                              </div>
+                            )}
                           </div>
                         ) : (
-                          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-muted-foreground border border-dashed">
+                            <ImageIcon className="h-4 w-4" />
                           </div>
                         )}
                       </TableCell>

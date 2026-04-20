@@ -6,26 +6,19 @@ export async function getHotels(
   limit = 100,
   offset = 0,
   city?: string,
-  country?: string
+  country?: string,
+  q?: string
 ): Promise<Hotel[]> {
   const params: Record<string, string | number> = { limit, offset }
-  if (city) params.city = city
-  if (country) params.country = country
+  if (city) params.q_city = city
+  if (country) params.q_country = country
+  if (q) params.q = q
   return api.get<Hotel[]>("/hotel/get_all", params)
 }
 
-// Get deleted hotels (admin)
-export async function getDeletedHotels(
-  limit = 100,
-  offset = 0
-): Promise<Hotel[]> {
-  return api.get<Hotel[]>("/hotel/deleted", { limit, offset })
-}
-
-// Search hotels
+// Search hotels (deprecated in favor of getHotels with combined filters)
 export async function searchHotels(q: string): Promise<Hotel[]> {
-  const response = await api.get<{ results: Hotel[] }>("/hotel/search_hotels", { q })
-  return response.results
+  return getHotels(100, 0, undefined, undefined, q)
 }
 
 // Get hotel by ID
@@ -66,6 +59,14 @@ export async function updateHotel(id: number, data: HotelUpdate): Promise<Hotel>
 // Delete hotel (admin)
 export async function deleteHotel(id: number): Promise<void> {
   await api.delete(`/hotel/${id}`)
+}
+
+// Get deleted hotels (admin)
+export async function getDeletedHotels(
+    limit = 100,
+    offset = 0
+): Promise<Hotel[]> {
+    return api.get<Hotel[]>("/hotel/deleted", { limit, offset })
 }
 
 // Restore hotel (admin)

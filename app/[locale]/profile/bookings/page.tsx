@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
-import { CalendarDays, Loader2 } from "lucide-react"
+import { CalendarDays, Loader2, ArrowRight } from "lucide-react"
 import type { Booking } from "@/lib/types"
 
 export default function BookingsPage() {
@@ -43,15 +43,15 @@ export default function BookingsPage() {
     try {
       const result = await cancelBooking(cancelId)
       if (result.status === "already cancelled") {
-        toast.info("This booking was already cancelled")
+        toast.info("Это бронирование уже отменено")
       } else if (result.refund === "success") {
-        toast.success("Booking cancelled and refund initiated")
+        toast.success("Бронирование отменено, средства возвращены")
       } else {
-        toast.success("Booking cancelled successfully")
+        toast.success("Бронирование успешно отменено")
       }
       mutate()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to cancel booking")
+      toast.error(error instanceof Error ? error.message : "Ошибка отмены бронирования")
     } finally {
       setIsDeleting(false)
       setCancelId(null)
@@ -60,20 +60,19 @@ export default function BookingsPage() {
 
   const handlePay = async (booking: Booking) => {
     if (!booking.total_price) {
-      toast.error("Cannot process payment: price not available")
+      toast.error("Невозможно оплатить: цена не найдена")
       return
     }
     setPayingId(booking.id)
     try {
       const result = await createPayment(booking.id, booking.total_price)
-      // Redirect to Stripe checkout
       if (result.checkout_url) {
         window.location.href = result.checkout_url
       } else {
-        toast.error("Payment session not received")
+        toast.error("Платежная сессия не получена")
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Payment failed")
+      toast.error(error instanceof Error ? error.message : "Ошибка оплаты")
     } finally {
       setPayingId(null)
     }
@@ -89,38 +88,43 @@ export default function BookingsPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-muted-foreground">Please sign in to view your bookings</p>
-        <Button asChild className="mt-4">
-          <Link href="/en/auth/login">Sign In</Link>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <p className="text-muted-foreground text-lg mb-4">Пожалуйста, войдите в систему для просмотра бронирований</p>
+        <Button asChild className="rounded-xl h-11 px-8 font-semibold">
+          <Link href="/ru/auth/login">Войти</Link>
         </Button>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold">{t("title")}</h1>
+    <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{t("title")}</h1>
+        <p className="text-muted-foreground mt-1">Информация о ваших поездках и платежах</p>
+      </div>
 
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-44 w-full" />
+            <Skeleton key={i} className="h-44 w-full rounded-2xl" />
           ))}
         </div>
       ) : !bookings || bookings.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <CalendarDays className="mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-lg font-medium">{t("noBookings")}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Start exploring hotels and book your next stay
+        <div className="card-premium flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 mb-5">
+            <CalendarDays className="h-10 w-10 text-primary" />
+          </div>
+          <h3 className="text-xl font-bold text-foreground mb-2">{t("noBookings")}</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mb-6">
+            Изучите наши лучшие предложения и забронируйте свой следующий отпуск
           </p>
-          <Button asChild className="mt-4">
-            <Link href="/en/hotels">Browse Hotels</Link>
+          <Button asChild className="rounded-xl h-11 px-8 font-semibold shadow-sm">
+            <Link href="/ru/hotels">Найти отели <ArrowRight className="ml-2 h-4 w-4"/></Link>
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {bookings.map((booking) => (
             <BookingCard
               key={booking.id}
@@ -135,31 +139,29 @@ export default function BookingsPage() {
 
       {payingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-3 rounded-lg border bg-card p-8 shadow-lg">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Redirecting to payment…</p>
+          <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/50 bg-card p-10 shadow-2xl">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="text-sm font-semibold text-foreground">Переходим к оплате...</p>
           </div>
         </div>
       )}
 
-      {/* Cancel Confirmation Dialog */}
       <AlertDialog open={!!cancelId} onOpenChange={() => setCancelId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl border-border/50 shadow-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>{t("cancelBooking")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("cancelConfirm")}
-              {" "}If payment was made, a refund will be initiated automatically.
+            <AlertDialogDescription className="text-sm leading-relaxed text-muted-foreground mt-2">
+              {t("cancelConfirm")} Если вы уже оплатили бронирование, возврат средств будет инициирован автоматически.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep Booking</AlertDialogCancel>
+          <AlertDialogFooter className="mt-4 gap-2">
+            <AlertDialogCancel className="rounded-xl font-medium">Вернуться</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancel}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="rounded-xl font-medium bg-red-500 hover:bg-red-600 focus:ring-red-500 text-white"
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Yes, Cancel
+              Да, отменить
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

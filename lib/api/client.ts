@@ -89,8 +89,8 @@ class ApiClient {
       (headers as Record<string, string>)["Authorization"] = `Bearer ${accessToken}`
     }
 
-    // Add Content-Type for JSON requests (if not FormData)
-    if (!(options.body instanceof FormData)) {
+    // Add Content-Type for JSON requests (if body exists and is not FormData)
+    if (options.body && !(options.body instanceof FormData)) {
       (headers as Record<string, string>)["Content-Type"] = "application/json"
     }
 

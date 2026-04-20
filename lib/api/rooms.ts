@@ -36,7 +36,12 @@ export async function createRoom(data: RoomCreate): Promise<Room> {
   formData.append("number_room", data.number_room.toString())
   formData.append("price", data.price.toString())
   formData.append("wifi", data.wifi.toString())
-  formData.append("photo", data.photo)
+  
+  if (data.photos && data.photos.length > 0) {
+    data.photos.forEach((file) => {
+      formData.append("photos", file)
+    })
+  }
 
   return api.postForm<Room>("/rooms/", formData)
 }
@@ -48,7 +53,12 @@ export async function updateRoom(id: number, data: RoomUpdate): Promise<Room> {
   if (data.number_room !== undefined) formData.append("number_room", data.number_room.toString())
   if (data.price !== undefined) formData.append("price", data.price.toString())
   if (data.wifi !== undefined) formData.append("wifi", data.wifi.toString())
-  if (data.photo) formData.append("photo", data.photo)
+  
+  if (data.photos && data.photos.length > 0) {
+    data.photos.forEach((file) => {
+      formData.append("photos", file)
+    })
+  }
 
   return api.patchForm<Room>(`/rooms/${id}`, formData)
 }

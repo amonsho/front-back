@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useTranslations } from "next-intl"
 import { 
   BarChart3, 
   Building2, 
@@ -12,8 +11,7 @@ import {
   Settings, 
   LogOut,
   ChevronLeft,
-  LayoutDashboard,
-  ArrowLeft
+  LayoutDashboard
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -46,21 +44,20 @@ function SidebarItem({ href, icon: Icon, label, active, collapsed }: SidebarItem
 
 export function AdminSidebar({ locale }: { locale: string }) {
   const pathname = usePathname()
-  const t = useTranslations("admin")
   const [collapsed, setCollapsed] = useState(false)
 
   const menuItems = [
-    { href: `/${locale}/admin`, icon: LayoutDashboard, label: t("dashboard") },
-    { href: `/${locale}/admin/hotels`, icon: Building2, label: t("hotels") },
-    { href: `/${locale}/admin/rooms`, icon: BedDouble, label: t("rooms") },
-    { href: `/${locale}/admin/bookings`, icon: CalendarCheck, label: t("bookings") },
-    { href: `/${locale}/admin/users`, icon: Users, label: t("users") },
+    { href: `/${locale}/admin`, icon: LayoutDashboard, label: "Дашборд" },
+    { href: `/${locale}/admin/hotels`, icon: Building2, label: "Отели" },
+    { href: `/${locale}/admin/rooms`, icon: BedDouble, label: "Номера" },
+    { href: `/${locale}/admin/bookings`, icon: CalendarCheck, label: "Бронирования" },
+    { href: `/${locale}/admin/users`, icon: Users, label: "Пользователи" },
   ]
 
   return (
     <aside 
       className={cn(
-        "sticky left-0 top-0 z-40 h-screen border-r bg-card/50 backdrop-blur-xl transition-all duration-300 ease-in-out shrink-0",
+        "fixed left-0 top-0 z-40 h-screen border-r bg-card/50 backdrop-blur-xl transition-all duration-300 ease-in-out",
         collapsed ? "w-[72px]" : "w-64"
       )}
     >
@@ -98,8 +95,8 @@ export function AdminSidebar({ locale }: { locale: string }) {
         <div className="mt-auto pt-6 border-t border-border/50 flex flex-col gap-2">
             <SidebarItem
                 href={`/${locale}`}
-                icon={ArrowLeft}
-                label="Вернуться на сайт"
+                icon={LogOut}
+                label="Выйти из админки"
                 collapsed={collapsed}
             />
             

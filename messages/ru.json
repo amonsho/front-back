@@ -22,7 +22,7 @@
     "hotels": "Отели",
     "profile": "Профиль",
     "bookings": "Мои бронирования",
-    "admin": "Админ панель",
+    "admin": "Админ-панель",
     "login": "Войти",
     "register": "Регистрация",
     "logout": "Выйти"
@@ -48,7 +48,7 @@
     "filters": "Фильтры",
     "city": "Город",
     "country": "Страна",
-    "stars": "Звезды",
+    "stars": "Звёзды",
     "priceRange": "Диапазон цен",
     "clearFilters": "Сбросить фильтры",
     "noResults": "Отели не найдены",
@@ -171,10 +171,10 @@
     "active": "Активные",
     "archive": "Архив",
     "restore": "Восстановить",
-    "activeHotels": "Активные",
-    "deletedHotels": "Удаленные",
+    "activeHotels": "Активные отели",
+    "deletedHotels": "Удалённые отели",
     "roomsList": "Список номеров",
-    "deletedRooms": "Удаленные номера"
+    "deletedRooms": "Удалённые номера"
   },
   "ai": {
     "title": "Умный помощник",

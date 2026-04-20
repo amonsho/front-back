@@ -196,54 +196,68 @@ export default function AdminHotelsPage() {
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  required
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-semibold tracking-wide uppercase opacity-70">Название отеля</Label>
+                  <Input
+                    id="name"
+                    placeholder="Пример: Hilton Dushanbe"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    required
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-sm font-semibold tracking-wide uppercase opacity-70">Точный адрес</Label>
+                  <Input
+                    id="address"
+                    placeholder="Пример: ул. Айни, 48"
+                    value={form.address}
+                    onChange={(e) => setForm({ ...form, address: e.target.value })}
+                    required
+                    className="rounded-xl"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-sm font-semibold tracking-wide uppercase opacity-70">Город</Label>
+                  <Input
+                    id="city"
+                    placeholder="Пример: Душанбе"
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    required
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="text-sm font-semibold tracking-wide uppercase opacity-70">Страна</Label>
+                  <Input
+                    id="country"
+                    placeholder="Пример: Таджикистан"
+                    value={form.country}
+                    onChange={(e) => setForm({ ...form, country: e.target.value })}
+                    required
+                    className="rounded-xl"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  value={form.city}
-                  onChange={(e) => setForm({ ...form, city: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  value={form.country}
-                  onChange={(e) => setForm({ ...form, country: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-sm font-semibold tracking-wide uppercase opacity-70">Описание отеля</Label>
                 <Textarea
                   id="description"
+                  placeholder="Опишите преимущества, услуги и особенности отеля..."
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   rows={4}
+                  className="rounded-xl"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="latitude">Latitude (e.g. 48.8584)</Label>
+                  <Label htmlFor="latitude" className="text-sm font-semibold tracking-wide uppercase opacity-70">Широта (Latitude)</Label>
                   <Input
                     id="latitude"
                     type="number"
@@ -251,10 +265,11 @@ export default function AdminHotelsPage() {
                     value={form.latitude}
                     onChange={(e) => setForm({ ...form, latitude: e.target.value })}
                     placeholder="48.8584"
+                    className="rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="longitude">Longitude (e.g. 2.2945)</Label>
+                  <Label htmlFor="longitude" className="text-sm font-semibold tracking-wide uppercase opacity-70">Долгота (Longitude)</Label>
                   <Input
                     id="longitude"
                     type="number"
@@ -262,22 +277,28 @@ export default function AdminHotelsPage() {
                     value={form.longitude}
                     onChange={(e) => setForm({ ...form, longitude: e.target.value })}
                     placeholder="2.2945"
+                    className="rounded-xl"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="photo">Photo {editingHotel && "(Leave blank to keep current photo)"}</Label>
-                <Input
-                  id="photo"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setForm({ ...form, photo: e.target.files?.[0] || null })}
-                  required={!editingHotel}
-                />
+                <Label htmlFor="photo" className="text-sm font-semibold tracking-wide uppercase opacity-70">
+                  Главное фото {editingHotel && "(оставьте пустым, чтобы не менять)"}
+                </Label>
+                <div className="flex items-center gap-4">
+                   <Input
+                    id="photo"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setForm({ ...form, photo: e.target.files?.[0] || null })}
+                    required={!editingHotel}
+                    className="rounded-xl cursor-pointer"
+                  />
+                </div>
               </div>
-              <Button type="submit" disabled={isSubmitting} className="w-full">
+              <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-xl text-lg font-bold shadow-lg shadow-primary/20">
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {editingHotel ? "Update" : "Create"}
+                {editingHotel ? "Сохранить изменения" : "Добавить отель"}
               </Button>
             </form>
           </DialogContent>

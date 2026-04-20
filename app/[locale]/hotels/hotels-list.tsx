@@ -8,10 +8,10 @@ import { getHotels, searchHotels } from "@/lib/api/hotels"
 import { HotelCard } from "@/components/hotels/hotel-card"
 import { HotelSearch } from "@/components/hotels/hotel-search"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ChevronLeft, ChevronRight, Building2, Map as MapIcon, List as ListIcon } from "lucide-react"
 import MapWrapper from "@/components/map/MapWrapper"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface HotelsListProps {
   locale: string
@@ -23,14 +23,13 @@ interface HotelsListProps {
 
 const ITEMS_PER_PAGE = 9
 
-// Demo hotels for when backend is not available
 const demoHotels: Hotel[] = [
   {
     id: 1,
     name: "Grand Plaza Hotel",
     city: "New York",
     country: "USA",
-    description: "Experience luxury in the heart of Manhattan with stunning city views and world-class amenities.",
+    description: "Роскошь в самом сердце Манхэттена с потрясающим видом на город.",
     address: "123 Fifth Avenue",
     photo: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80",
     created_at: "2024-01-01",
@@ -40,7 +39,7 @@ const demoHotels: Hotel[] = [
     name: "Seaside Resort",
     city: "Miami",
     country: "USA",
-    description: "Beautiful ocean views, sandy beaches, and tropical paradise await you.",
+    description: "Красивый вид на океан, песчаные пляжи и тропический рай.",
     address: "456 Ocean Drive",
     photo: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
     created_at: "2024-01-01",
@@ -50,7 +49,7 @@ const demoHotels: Hotel[] = [
     name: "Mountain Lodge",
     city: "Aspen",
     country: "USA",
-    description: "Your perfect getaway in the Rocky Mountains with ski-in/ski-out access.",
+    description: "Идеальный отдых в Скалистых горах со ski-in/ski-out доступом.",
     address: "789 Mountain Road",
     photo: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80",
     created_at: "2024-01-01",
@@ -60,7 +59,7 @@ const demoHotels: Hotel[] = [
     name: "Urban Boutique Hotel",
     city: "San Francisco",
     country: "USA",
-    description: "A modern boutique experience in the vibrant heart of San Francisco.",
+    description: "Современный бутик-отель в центре Сан-Франциско.",
     address: "321 Market Street",
     photo: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80",
     created_at: "2024-01-01",
@@ -70,7 +69,7 @@ const demoHotels: Hotel[] = [
     name: "Historic Inn",
     city: "Boston",
     country: "USA",
-    description: "Charming historic accommodation in the heart of Boston's Freedom Trail.",
+    description: "Уютный исторический отель в центре Бостона.",
     address: "555 Colonial Way",
     photo: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80",
     created_at: "2024-01-01",
@@ -80,7 +79,7 @@ const demoHotels: Hotel[] = [
     name: "Desert Oasis Resort",
     city: "Phoenix",
     country: "USA",
-    description: "Escape to a luxurious desert retreat with stunning sunset views.",
+    description: "Роскошный пустынный ретрит с потрясающими видами на закат.",
     address: "888 Cactus Lane",
     photo: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80",
     created_at: "2024-01-01",
@@ -96,7 +95,6 @@ export function HotelsList({ locale, initialQuery, initialCity, initialCountry, 
   const [country, setCountry] = useState(initialCountry)
   const [view, setView] = useState<"list" | "map">("list")
 
-  // Update filters when URL params change
   useEffect(() => {
     setQuery(initialQuery)
     setCity(initialCity)
@@ -107,113 +105,160 @@ export function HotelsList({ locale, initialQuery, initialCity, initialCountry, 
   const { data: hotels, error, isLoading } = useSWR<Hotel[]>(
     ["hotels", page, query, city, country],
     async () => {
-      // If there's a global query, use the search endpoint
-      if (query) {
-        return searchHotels(query)
-      }
-      // Otherwise use the filtered list endpoint
-      return getHotels(ITEMS_PER_PAGE, (page - 1) * ITEMS_PER_PAGE, city, country)
+      return getHotels(ITEMS_PER_PAGE, (page - 1) * ITEMS_PER_PAGE, city, country, query)
     },
-    {
-      fallbackData: demoHotels,
-      revalidateOnFocus: false,
-    }
+    { fallbackData: demoHotels, revalidateOnFocus: false }
   )
 
   const totalPages = Math.ceil((hotels?.length || 0) / ITEMS_PER_PAGE)
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Building2 className="mb-4 h-12 w-12 text-muted-foreground" />
-        <p className="text-muted-foreground">{tCommon("error")}</p>
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 mb-4">
+          <Building2 className="h-8 w-8 text-destructive/60" />
+        </div>
+        <p className="font-semibold text-foreground">{tCommon("error")}</p>
+        <p className="text-sm text-muted-foreground mt-1">Попробуйте обновить страницу</p>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Search/Filters */}
-      <div className="rounded-lg border bg-card p-4">
-        <HotelSearch 
-          locale={locale} 
+      {/* Поиск */}
+      <div>
+        <HotelSearch
+          locale={locale}
           initialQuery={query}
-          initialCity={city} 
-          initialCountry={country} 
+          initialCity={city}
+          initialCountry={country}
         />
       </div>
 
-      {/* Results Header with Toggle */}
+      {/* Заголовок результатов */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          {hotels ? `${hotels.length} ${t("resultsFound") || "отелей найдено"}` : t("searching")}
-        </h2>
-        <Tabs value={view} onValueChange={(v) => setView(v as "list" | "map")} className="w-[200px]">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="list" className="flex items-center gap-2">
-              <ListIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("listView") || "Список"}</span>
-            </TabsTrigger>
-            <TabsTrigger value="map" className="flex items-center gap-2">
-              <MapIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("mapView") || "Карта"}</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-bold text-foreground">
+            {hotels ? (
+              <>
+                <span className="text-primary">{hotels.length}</span>
+                {" "}
+                {t("resultsFound") || "отелей найдено"}
+              </>
+            ) : (
+              t("searching")
+            )}
+          </h2>
+          {(query || city || country) && (
+            <Badge variant="secondary" className="text-xs">
+              Фильтры применены
+            </Badge>
+          )}
+        </div>
+
+        {/* Переключатель вид */}
+        <div className="flex items-center gap-1 rounded-xl bg-muted p-1">
+          <button
+            onClick={() => setView("list")}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+              view === "list"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ListIcon className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t("listView") || "Список"}</span>
+          </button>
+          <button
+            onClick={() => setView("map")}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+              view === "map"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MapIcon className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t("mapView") || "Карта"}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Results */}
+      {/* Результаты */}
       {isLoading ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-3">
-              <Skeleton className="aspect-[4/3] w-full" />
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
+            <div key={i} className="rounded-2xl border bg-card overflow-hidden">
+              <Skeleton className="aspect-[4/3] w-full rounded-none" />
+              <div className="p-4 space-y-3">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-3.5 w-1/2" />
+                <Skeleton className="h-3.5 w-full" />
+                <div className="flex justify-between items-center pt-1">
+                  <Skeleton className="h-7 w-20" />
+                  <Skeleton className="h-8 w-24 rounded-xl" />
+                </div>
+              </div>
             </div>
           ))}
         </div>
       ) : !hotels || hotels.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Building2 className="mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-lg font-medium">{t("noResults")}</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted mb-5">
+            <Building2 className="h-10 w-10 text-muted-foreground/40" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground mb-2">{t("noResults")}</h3>
           <p className="text-sm text-muted-foreground">
-            Try adjusting your search filters
+            Попробуйте изменить параметры поиска
           </p>
         </div>
       ) : (
         <>
           {view === "list" ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {hotels && hotels.map((hotel) => (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {hotels.map((hotel) => (
                 <HotelCard key={hotel.id} hotel={hotel} locale={locale} />
               ))}
             </div>
           ) : (
-            <div className="h-[600px] w-full overflow-hidden rounded-xl border shadow-lg">
+            <div className="h-[600px] w-full overflow-hidden rounded-2xl border shadow-card">
               <MapWrapper hotels={hotels} locale={locale} />
             </div>
           )}
 
-          {/* Pagination - Only show for list view */}
+          {/* Пагинация */}
           {view === "list" && totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-8">
+            <div className="flex items-center justify-center gap-2 pt-6">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
+                className="h-9 w-9 rounded-xl"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="px-4 text-sm text-muted-foreground">
-                {page} / {totalPages}
-              </span>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`h-9 w-9 rounded-xl text-sm font-medium transition-all ${
+                      p === page
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
+                className="h-9 w-9 rounded-xl"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>

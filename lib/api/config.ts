@@ -1,4 +1,15 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname
+    if (hostname === "127.0.0.1" || hostname === "localhost") {
+      return `http://${hostname}:8000`
+    }
+  }
+  return "http://localhost:8000"
+}
+
+export const API_URL = getBaseUrl()
 
 /**
  * Safely joins the API_URL with an image path.
@@ -10,16 +21,15 @@ export function getImageUrl(path?: string | null, placeholder = "/placeholder-ho
   // If it's already a full URL, return it
   if (path.startsWith("http")) return path
   
-  // Ensure we don't have double slashes
+  // Ensure we don't have double slashes in base
   const cleanBase = API_URL.endsWith("/") ? API_URL.slice(0, -1) : API_URL
   
-  // Backend stores paths inconsistently (sometimes with 'media/', sometimes without)
-  // Strip any leading '/' or 'media/' to normalize the path and avoid duplication
-  const relativePath = path.replace(/^\/?(media\/)?/, "")
+  // Clean the path: remove leading / and redundant media/ prefix (we will add it back consistently)
+  let cleanPath = path.startsWith("/") ? path.slice(1) : path
+  if (cleanPath.startsWith("media/")) {
+    cleanPath = cleanPath.slice(6)
+  }
   
-  // Prepend /media/ and handle spaces/special chars in filenames
-  // We use decodeURIComponent first in case it's already encoded, then encodeURI
-  const safePath = encodeURI(decodeURIComponent(relativePath))
-  
-  return `${cleanBase}/media/${safePath}`
+  // Final URL construction
+  return `${cleanBase}/media/${encodeURI(decodeURIComponent(cleanPath))}`
 }
