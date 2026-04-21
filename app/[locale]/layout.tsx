@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Toaster } from "@/components/ui/sonner"
 import { GoogleOAuthProvider } from "@react-oauth/google"
-import { AIChatWidget } from "@/components/ai/ai-chat-widget"
+import { SupportChatWidget } from "@/components/chat/support-chat-widget"
 
 import type { Metadata } from 'next'
 
@@ -49,9 +49,10 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             <Footer locale={locale} />
           </div>
           <Toaster position="top-right" richColors />
-          <AIChatWidget />
+          <SupportChatWidget />
         </AuthProvider>
       </GoogleOAuthProvider>
     </NextIntlClientProvider>
   )
 }
+
