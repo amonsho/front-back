@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslations } from "next-intl"
@@ -14,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getImageUrl, API_URL } from "@/lib/api/config"
 import { getAccessToken } from "@/lib/api/client"
 import { toast } from "sonner"
-import { Loader2, Upload, User, CheckCircle2, ShieldCheck, ShieldAlert, Mail, Camera } from "lucide-react"
+import { Loader2, Upload, User, CheckCircle2, ShieldCheck, ShieldAlert, Mail, Camera, MessageSquare } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 export default function ProfilePage() {
@@ -128,6 +129,14 @@ export default function ProfilePage() {
                 </Badge>
               )}
             </div>
+            
+            <Link href="/profile/messages" className="w-full mt-6">
+              <Button variant="outline" className="w-full gap-2 rounded-xl border-primary/20 hover:bg-primary/5 text-primary">
+                <MessageSquare className="h-4 w-4" />
+                {t("myMessages")}
+              </Button>
+            </Link>
+
             {!user.is_verified && (
               <div className="mt-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-500 text-xs p-3 rounded-xl border border-amber-200 dark:border-amber-900/50 flex flex-col gap-2">
                  <div className="flex items-center gap-1.5 font-bold">

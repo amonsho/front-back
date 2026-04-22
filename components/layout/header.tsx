@@ -14,7 +14,7 @@ import {
 import { api } from "@/lib/api/client"
 import { getImageUrl } from "@/lib/api/config"
 import { LocaleSwitcher } from "./locale-switcher"
-import { User, LogOut, Settings, CalendarDays, Shield, Menu, Building2, Home, Building } from "lucide-react"
+import { User, LogOut, Settings, CalendarDays, Shield, Menu, Building2, Home, Building, MessageSquare } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
@@ -131,6 +131,12 @@ export function Header({ locale }: HeaderProps) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-lg">
+                      <Link href={`/${locale}/profile/messages`} className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        {t("messages")}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="rounded-lg">
                       <Link href={`/${locale}/profile/settings`} className="flex items-center gap-2">
                         <Settings className="h-4 w-4" />
                         Настройки
@@ -218,6 +224,14 @@ export function Header({ locale }: HeaderProps) {
                       >
                         <CalendarDays className="h-4 w-4 text-primary" />
                         {t("bookings")}
+                      </Link>
+                      <Link
+                        href={`/${locale}/profile/messages`}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground hover:bg-primary/8 transition-colors"
+                      >
+                        <MessageSquare className="h-4 w-4 text-primary" />
+                        {t("messages")}
                       </Link>
                       {isAdmin && (
                         <Link

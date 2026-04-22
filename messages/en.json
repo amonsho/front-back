@@ -25,7 +25,8 @@
     "admin": "Admin Panel",
     "login": "Sign In",
     "register": "Sign Up",
-    "logout": "Sign Out"
+    "logout": "Sign Out",
+    "messages": "Messages"
   },
   "landing": {
     "title": "Find Your Perfect Stay",
@@ -135,7 +136,9 @@
     "updateProfile": "Update Profile",
     "profileUpdated": "Profile updated successfully",
     "passwordChanged": "Password changed successfully",
-    "settings": "Settings"
+    "settings": "Settings",
+    "myMessages": "My Messages",
+    "messagesSubtitle": "Your chat history with support and notifications"
   },
   "reviews": {
     "rating": "Rating",

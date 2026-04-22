@@ -25,7 +25,8 @@
     "admin": "Админ-панель",
     "login": "Войти",
     "register": "Регистрация",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "messages": "Сообщения"
   },
   "landing": {
     "title": "Найдите идеальный отель",
@@ -135,7 +136,9 @@
     "updateProfile": "Обновить профиль",
     "profileUpdated": "Профиль успешно обновлен",
     "passwordChanged": "Пароль успешно изменен",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "myMessages": "Мои сообщения",
+    "messagesSubtitle": "Ваша переписка со службой поддержки и уведомления"
   },
   "reviews": {
     "rating": "Оценка",
