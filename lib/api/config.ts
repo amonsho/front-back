@@ -1,11 +1,12 @@
 const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
   if (typeof window !== "undefined") {
     const hostname = window.location.hostname
-    if (hostname === "127.0.0.1" || hostname === "localhost") {
+    // If we're on a local network IP or localhost, use that same host for the API
+    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.") || hostname.startsWith("10.")) {
       return `http://${hostname}:8000`
     }
   }
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
   return "http://localhost:8000"
 }
 
