@@ -12,7 +12,9 @@ interface CallbackPageProps {
   params: Promise<{ locale: string }>
 }
 
-export default function CallbackPage({ params }: CallbackPageProps) {
+import { Suspense } from "react"
+
+function CallbackContent({ params }: CallbackPageProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refreshUser } = useAuth()
@@ -88,5 +90,17 @@ export default function CallbackPage({ params }: CallbackPageProps) {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function CallbackPage({ params }: CallbackPageProps) {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <CallbackContent params={params} />
+    </Suspense>
   )
 }
