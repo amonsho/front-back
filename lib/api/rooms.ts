@@ -49,10 +49,10 @@ export async function createRoom(data: RoomCreate): Promise<Room> {
 // Update room (admin) uses FormData
 export async function updateRoom(id: number, data: RoomUpdate): Promise<Room> {
   const formData = new FormData()
-  if (data.room_type) formData.append("room_type", data.room_type)
-  if (data.number_room !== undefined) formData.append("number_room", data.number_room.toString())
-  if (data.price !== undefined) formData.append("price", data.price.toString())
-  if (data.wifi !== undefined) formData.append("wifi", data.wifi.toString())
+  if (data.room_type !== undefined && data.room_type !== null) formData.append("room_type", data.room_type)
+  if (data.number_room !== undefined && data.number_room !== null) formData.append("number_room", data.number_room.toString())
+  if (data.price !== undefined && data.price !== null) formData.append("price", data.price.toString())
+  if (data.wifi !== undefined && data.wifi !== null) formData.append("wifi", data.wifi.toString())
   
   if (data.photos && data.photos.length > 0) {
     data.photos.forEach((file) => {

@@ -23,6 +23,9 @@ export default function AdminLayout({ children, params }: AdminLayoutProps) {
       }
     }
     checkAccess()
+    
+    // SAFEGUARD: Radix UI sometimes leaves pointer-events: none on body during hot-reloads
+    document.body.style.pointerEvents = 'auto'
   }, [user, isAdmin, isLoading, router, params])
 
   if (isLoading) {

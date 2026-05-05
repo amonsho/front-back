@@ -10,8 +10,8 @@ export async function getHotels(
   q?: string
 ): Promise<Hotel[]> {
   const params: Record<string, string | number> = { limit, offset }
-  if (city) params.q_city = city
-  if (country) params.q_country = country
+  if (city) params.city = city
+  if (country) params.country = country
   if (q) params.q = q
   return api.get<Hotel[]>("/hotel/get_all", params)
 }
@@ -44,11 +44,11 @@ export async function createHotel(data: HotelCreate): Promise<Hotel> {
 // Update hotel (admin) uses FormData
 export async function updateHotel(id: number, data: HotelUpdate): Promise<Hotel> {
   const formData = new FormData()
-  if (data.name) formData.append("name", data.name)
-  if (data.address) formData.append("address", data.address)
-  if (data.city) formData.append("city", data.city)
-  if (data.country) formData.append("country", data.country)
-  if (data.description) formData.append("description", data.description)
+  if (data.name !== undefined && data.name !== null) formData.append("name", data.name)
+  if (data.address !== undefined && data.address !== null) formData.append("address", data.address)
+  if (data.city !== undefined && data.city !== null) formData.append("city", data.city)
+  if (data.country !== undefined && data.country !== null) formData.append("country", data.country)
+  if (data.description !== undefined && data.description !== null) formData.append("description", data.description)
   if (data.latitude !== undefined && data.latitude !== null) formData.append("latitude", data.latitude.toString())
   if (data.longitude !== undefined && data.longitude !== null) formData.append("longitude", data.longitude.toString())
   if (data.photo) formData.append("photo", data.photo)

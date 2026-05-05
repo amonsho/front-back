@@ -105,7 +105,7 @@ export function SupportChatWidget() {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
+      <div className={`fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans ${!isOpen ? 'pointer-events-none' : ''}`}>
         {/* Chat Window */}
         <div
           className={`mb-4 w-[380px] overflow-hidden rounded-[24px] border border-white/20 bg-background/95 shadow-[0_20px_50px_rgba(0,0,0,0.2)] backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] origin-bottom-right ${
@@ -233,7 +233,7 @@ export function SupportChatWidget() {
         {!isOpen && (
             <button
                 onClick={() => setIsOpen(true)}
-                className="group relative flex h-16 w-16 items-center justify-center transition-all duration-500 active:scale-95"
+                className="group relative flex h-16 w-16 items-center justify-center transition-all duration-500 active:scale-95 pointer-events-auto"
             >
                 {/* Ping animation behind */}
                 <span className="absolute inset-0 rounded-3xl bg-primary/30 animate-ping opacity-20"></span>

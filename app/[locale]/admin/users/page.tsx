@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Loader2, Shield, User as UserIcon } from "lucide-react"
+import { Trash2, Loader2, Shield, User as UserIcon, RefreshCw } from "lucide-react"
 import type { User, UserRole } from "@/lib/types"
 
 export default function AdminUsersPage() {

@@ -163,6 +163,11 @@
     font-weight: 700;
     letter-spacing: -0.025em;
   }
+
+  /* SAFEGUARD: Prevent Radix UI from globally locking the screen */
+  body[data-scroll-locked] {
+    pointer-events: auto !important;
+  }
 }
 
 /* ─── Утилиты ─── */

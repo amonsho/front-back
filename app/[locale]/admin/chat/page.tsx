@@ -31,9 +31,12 @@ interface ChatRoom {
   unread_count: number
 }
 
-// Utility to clean AI messages from offline notices for admin view
+// Utility to clean AI messages from offline notices
 const cleanMessageText = (text: string) => {
-  return text.replace(/\n*\(Примечание: Администратора сейчас нет в сети, он ответит вам, как только зайдет в чат\)/g, "").trim();
+  return text
+    .replace(/\n*_\(Администратора сейчас нет в сети[^)]*\)_/g, "")
+    .replace(/\n*\(Примечание: Администратора сейчас нет в сети[^)]*\)/g, "")
+    .trim();
 };
 
 export default function AdminChatPage() {
@@ -63,13 +66,18 @@ export default function AdminChatPage() {
   }, [])
 
   useEffect(() => {
-    if (!activeRoom) return
+    if (!activeRoom || !user) return
+
+    // Clear messages before loading new room
+    setMessages([])
 
     if (socketRef.current) {
       socketRef.current.close()
+      socketRef.current = null
     }
 
-    const wsUrl = `${API_URL.replace("http", "ws")}/chat/ws/${user?.id}/${activeRoom.chat_id}`
+    const wsBase = API_URL.replace(/^https/, "wss").replace(/^http/, "ws")
+    const wsUrl = `${wsBase}/chat/ws/${user.id}/${activeRoom.chat_id}`
     const socket = new WebSocket(wsUrl)
     socketRef.current = socket
 
@@ -80,20 +88,26 @@ export default function AdminChatPage() {
           setMessages(data)
         } else {
           setMessages((prev) => {
-            const exists = prev.some(m => m.id === data.id || (m.text === data.text && m.sender_id === data.sender_id && Math.abs(Date.now() - (new Date(m.create_at || "").getTime() || 0)) < 1000))
-            if (exists) return prev
-            return [...prev, data]
+            const exists = prev.some(
+              (m) =>
+                m.id === data.id ||
+                (m.text === data.text &&
+                  m.sender_id === data.sender_id &&
+                  Math.abs(Date.now() - new Date(m.create_at || "").getTime()) < 2000)
+            )
+            return exists ? prev : [...prev, data]
           })
         }
-      } catch (err) {
-        console.error("Failed to parse admin chat message", err)
+      } catch {
+        /* ignore */
       }
     }
 
     return () => {
       socket.close()
+      socketRef.current = null
     }
-  }, [activeRoom])
+  }, [activeRoom, user])
 
   useEffect(() => {
     if (scrollRef.current) {
