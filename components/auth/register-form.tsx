@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslations } from "next-intl"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { registerSchema, type RegisterFormData } from "@/lib/validations/schemas"
 import { Button } from "@/components/ui/button"
@@ -21,6 +21,8 @@ export function RegisterForm({ locale }: RegisterFormProps) {
   const t = useTranslations("auth")
   const router = useRouter()
   const { register: registerUser } = useAuth()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get("redirect")
   const [isLoading, setIsLoading] = useState(false)
 
   const {
@@ -41,7 +43,14 @@ export function RegisterForm({ locale }: RegisterFormProps) {
         password2: data.confirmPassword,
       })
       toast.success(t("registrationSuccess"))
-      router.push(`/${locale}/auth/login`)
+      // If there's a redirect, we might want to go to login first but keep the redirect,
+      // or if registration auto-logs in, go straight to redirect.
+      // Based on current useAuth, it seems registration DOES NOT auto-login (it redirects to /auth/login).
+      // So we should pass the redirect to the login page.
+      const loginUrl = redirect 
+        ? `/${locale}/auth/login?redirect=${encodeURIComponent(redirect)}`
+        : `/${locale}/auth/login`
+      router.push(loginUrl)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Registration failed")
     } finally {

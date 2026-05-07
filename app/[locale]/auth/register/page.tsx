@@ -8,8 +8,9 @@ interface RegisterPageProps {
   params: Promise<{ locale: string }>
 }
 
-export default async function RegisterPage({ params }: RegisterPageProps) {
+export default async function RegisterPage({ params, searchParams }: RegisterPageProps & { searchParams: Promise<{ redirect?: string }> }) {
   const { locale } = await params
+  const { redirect } = await searchParams
   setRequestLocale(locale)
   const t = await getTranslations("auth")
 
@@ -52,7 +53,7 @@ export default async function RegisterPage({ params }: RegisterPageProps) {
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {t("hasAccount")}{" "}
             <Link
-              href={`/${locale}/auth/login`}
+              href={redirect ? `/${locale}/auth/login?redirect=${encodeURIComponent(redirect)}` : `/${locale}/auth/login`}
               className="font-semibold text-primary hover:text-primary/80 transition-colors"
             >
               {t("loginButton")}

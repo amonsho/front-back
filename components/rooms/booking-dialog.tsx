@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
 import { format, differenceInDays, addDays } from "date-fns"
@@ -29,14 +29,22 @@ interface BookingDialogProps {
   locale: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  initialCheckIn?: Date
+  initialCheckOut?: Date
 }
 
-export function BookingDialog({ room, hotel, locale, open, onOpenChange }: BookingDialogProps) {
+export function BookingDialog({ room, hotel, locale, open, onOpenChange, initialCheckIn, initialCheckOut }: BookingDialogProps) {
   const t = useTranslations("booking")
   const { isLoggedIn } = useAuth()
   const router = useRouter()
-  const [checkIn, setCheckIn] = useState<Date | undefined>(addDays(new Date(), 1))
-  const [checkOut, setCheckOut] = useState<Date | undefined>(addDays(new Date(), 3))
+  const [checkIn, setCheckIn] = useState<Date | undefined>(initialCheckIn || addDays(new Date(), 1))
+  const [checkOut, setCheckOut] = useState<Date | undefined>(initialCheckOut || addDays(new Date(), 3))
+  
+  // Update state when initial values change (e.g. when intent is restored)
+  useEffect(() => {
+    if (initialCheckIn) setCheckIn(initialCheckIn)
+    if (initialCheckOut) setCheckOut(initialCheckOut)
+  }, [initialCheckIn, initialCheckOut])
   const [isLoading, setIsLoading] = useState(false)
 
   if (!room || !hotel) return null
@@ -46,8 +54,17 @@ export function BookingDialog({ room, hotel, locale, open, onOpenChange }: Booki
 
   const handleBook = async () => {
     if (!isLoggedIn) {
-      toast.error("Please sign in to book a room")
-      router.push(`/${locale}/auth/login`)
+      // Save booking intent to sessionStorage
+      const intent = {
+        hotelId: hotel.id,
+        roomId: room.id,
+        checkIn: checkIn ? checkIn.toISOString() : null,
+        checkOut: checkOut ? checkOut.toISOString() : null,
+      }
+      sessionStorage.setItem("booking_intent", JSON.stringify(intent))
+      
+      toast.info("Please register to complete your booking")
+      router.push(`/${locale}/auth/register?redirect=/${locale}/hotels/${hotel.id}`)
       return
     }
 

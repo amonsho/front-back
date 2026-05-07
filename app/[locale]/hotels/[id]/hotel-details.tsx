@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
@@ -52,6 +52,7 @@ export function HotelDetails({ hotelId, locale }: HotelDetailsProps) {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [bookingOpen, setBookingOpen] = useState(false)
   const [liked, setLiked] = useState(false)
+  const [restoredDates, setRestoredDates] = useState<{ checkIn?: Date; checkOut?: Date }>({})
 
   const { data: hotel, isLoading: hotelLoading } = useSWR(
     ["hotel", hotelId],
@@ -70,6 +71,34 @@ export function HotelDetails({ hotelId, locale }: HotelDetailsProps) {
 
   const reviews: Review[] = reviewsData?.reviews ?? []
   const averageRating: number | null = reviewsData?.average_rating ?? null
+  
+  // Restore booking intent on mount
+  useEffect(() => {
+    const savedIntent = sessionStorage.getItem("booking_intent")
+    if (savedIntent && hotel && rooms && rooms.length > 0) {
+      try {
+        const intent = JSON.parse(savedIntent)
+        // Check if this intent is for this hotel
+        if (intent.hotelId === hotel.id) {
+          const room = rooms.find((r: Room) => r.id === intent.roomId)
+          if (room) {
+            setSelectedRoom(room)
+            setBookingOpen(true)
+            if (intent.checkIn || intent.checkOut) {
+              setRestoredDates({
+                checkIn: intent.checkIn ? new Date(intent.checkIn) : undefined,
+                checkOut: intent.checkOut ? new Date(intent.checkOut) : undefined,
+              })
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse booking intent", e)
+      } finally {
+        sessionStorage.removeItem("booking_intent")
+      }
+    }
+  }, [hotel, rooms])
 
   const handleBookRoom = (room: Room) => {
     setSelectedRoom(room)
@@ -403,6 +432,8 @@ export function HotelDetails({ hotelId, locale }: HotelDetailsProps) {
         locale={locale}
         open={bookingOpen}
         onOpenChange={setBookingOpen}
+        initialCheckIn={restoredDates.checkIn}
+        initialCheckOut={restoredDates.checkOut}
       />
     </div>
   )

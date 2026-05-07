@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslations } from "next-intl"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { loginSchema, type LoginFormData } from "@/lib/validations/schemas"
 import { Button } from "@/components/ui/button"
@@ -21,6 +21,8 @@ export function LoginForm({ locale }: LoginFormProps) {
   const t = useTranslations("auth")
   const router = useRouter()
   const { login } = useAuth()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get("redirect")
   const [isLoading, setIsLoading] = useState(false)
 
   const {
@@ -36,7 +38,7 @@ export function LoginForm({ locale }: LoginFormProps) {
     try {
       await login(data)
       toast.success("Welcome back!")
-      router.push(`/${locale}`)
+      router.push(redirect || `/${locale}`)
       router.refresh()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("invalidCredentials"))
