@@ -167,7 +167,7 @@ export interface PaginatedResponse<T> {
 
 // API Error
 export interface ApiError {
-  detail: string
+  detail: string | any[]
 }
 
 // Reports

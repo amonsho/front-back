@@ -1,43 +1,72 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslations } from "next-intl"
 import { useAuth } from "@/lib/hooks/use-auth"
-import { changePassword } from "@/lib/api/users"
-import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/validations/schemas"
+import { changePassword, updateProfile } from "@/lib/api/users"
+import { changePasswordSchema, profileSchema, type ChangePasswordFormData, type ProfileFormData } from "@/lib/validations/schemas"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
-import { Loader2, Lock } from "lucide-react"
+import { Loader2, Lock, User as UserIcon } from "lucide-react"
 
 export default function SettingsPage() {
   const t = useTranslations("profile")
-  const { user, isLoading: authLoading } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
+  const { user, profile, isLoading: authLoading, refreshUser } = useAuth()
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false)
+  const [isProfileLoading, setIsProfileLoading] = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ChangePasswordFormData>({
+  const passwordForm = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
   })
 
-  const onSubmit = async (data: ChangePasswordFormData) => {
-    setIsLoading(true)
+  const profileForm = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      first_name: profile?.first_name || "",
+      last_name: profile?.last_name || "",
+      phone: profile?.phone || "",
+    }
+  })
+
+  // Populate form with data when profile is loaded
+  useEffect(() => {
+    if (profile) {
+      profileForm.reset({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone: profile.phone || "",
+      })
+    }
+  }, [profile, profileForm])
+
+  const onPasswordSubmit = async (data: ChangePasswordFormData) => {
+    setIsPasswordLoading(true)
     try {
-      await changePassword(data.currentPassword, data.newPassword)
+      await changePassword(data.currentPassword, data.newPassword, data.confirmPassword)
       toast.success(t("passwordChanged"))
-      reset()
+      passwordForm.reset()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to change password")
     } finally {
-      setIsLoading(false)
+      setIsPasswordLoading(false)
+    }
+  }
+
+  const onProfileSubmit = async (data: ProfileFormData) => {
+    setIsProfileLoading(true)
+    try {
+      await updateProfile(data)
+      await refreshUser()
+      toast.success(t("profileUpdated"))
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update profile")
+    } finally {
+      setIsProfileLoading(false)
     }
   }
 
@@ -58,8 +87,52 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold">{t("settings")}</h1>
+    <div className="container mx-auto max-w-2xl px-4 py-8 space-y-8">
+      <h1 className="text-3xl font-bold">{t("settings")}</h1>
+
+      {/* Personal Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserIcon className="h-5 w-5" />
+            Личная информация
+          </CardTitle>
+          <CardDescription>
+            Обновите вашу персональную информацию
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="first_name">{t("firstName")}</Label>
+                <Input id="first_name" {...profileForm.register("first_name")} />
+                {profileForm.formState.errors.first_name && (
+                  <p className="text-sm text-destructive">{profileForm.formState.errors.first_name.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name">{t("lastName")}</Label>
+                <Input id="last_name" {...profileForm.register("last_name")} />
+                {profileForm.formState.errors.last_name && (
+                  <p className="text-sm text-destructive">{profileForm.formState.errors.last_name.message}</p>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">{t("phone")}</Label>
+              <Input id="phone" type="tel" {...profileForm.register("phone")} />
+              {profileForm.formState.errors.phone && (
+                <p className="text-sm text-destructive">{profileForm.formState.errors.phone.message}</p>
+              )}
+            </div>
+            <Button type="submit" disabled={isProfileLoading}>
+              {isProfileLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t("updateProfile")}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Change Password */}
       <Card>
@@ -73,17 +146,17 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currentPassword">{t("currentPassword")}</Label>
               <Input
                 id="currentPassword"
                 type="password"
                 autoComplete="current-password"
-                {...register("currentPassword")}
+                {...passwordForm.register("currentPassword")}
               />
-              {errors.currentPassword && (
-                <p className="text-sm text-destructive">{errors.currentPassword.message}</p>
+              {passwordForm.formState.errors.currentPassword && (
+                <p className="text-sm text-destructive">{passwordForm.formState.errors.currentPassword.message}</p>
               )}
             </div>
 
@@ -93,10 +166,10 @@ export default function SettingsPage() {
                 id="newPassword"
                 type="password"
                 autoComplete="new-password"
-                {...register("newPassword")}
+                {...passwordForm.register("newPassword")}
               />
-              {errors.newPassword && (
-                <p className="text-sm text-destructive">{errors.newPassword.message}</p>
+              {passwordForm.formState.errors.newPassword && (
+                <p className="text-sm text-destructive">{passwordForm.formState.errors.newPassword.message}</p>
               )}
             </div>
 
@@ -106,15 +179,15 @@ export default function SettingsPage() {
                 id="confirmPassword"
                 type="password"
                 autoComplete="new-password"
-                {...register("confirmPassword")}
+                {...passwordForm.register("confirmPassword")}
               />
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+              {passwordForm.formState.errors.confirmPassword && (
+                <p className="text-sm text-destructive">{passwordForm.formState.errors.confirmPassword.message}</p>
               )}
             </div>
 
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" disabled={isPasswordLoading}>
+              {isPasswordLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("changePassword")}
             </Button>
           </form>

@@ -7,10 +7,11 @@ export async function getCurrentUser(): Promise<User> {
 }
 
 // Change password
-export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+export async function changePassword(oldPassword: string, newPassword: string, newPassword2: string): Promise<void> {
   await api.post("/users/change-password", {
     old_password: oldPassword,
     new_password: newPassword,
+    new_password2: newPassword2,
   })
 }
 

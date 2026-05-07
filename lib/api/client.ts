@@ -115,7 +115,16 @@ class ApiClient {
     // Handle other errors
     if (!response.ok) {
       const error: ApiError = await response.json().catch(() => ({ detail: "Unknown error" }))
-      throw new Error(error.detail)
+      let message = "An error occurred"
+      
+      if (typeof error.detail === "string") {
+        message = error.detail
+      } else if (Array.isArray(error.detail)) {
+        // Handle FastAPI validation errors
+        message = error.detail.map(d => d.msg).join(", ")
+      }
+      
+      throw new Error(message)
     }
 
     // Handle empty responses (204 No Content)

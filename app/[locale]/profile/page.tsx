@@ -2,12 +2,9 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslations } from "next-intl"
 import { useAuth } from "@/lib/hooks/use-auth"
-import { updateProfile, uploadAvatar } from "@/lib/api/users"
-import { profileSchema, type ProfileFormData } from "@/lib/validations/schemas"
+import { uploadAvatar } from "@/lib/api/users"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,40 +18,7 @@ import { Badge } from "@/components/ui/badge"
 export default function ProfilePage() {
   const t = useTranslations("profile")
   const { user, profile, isLoading: authLoading, refreshUser } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-  })
-
-  useEffect(() => {
-    if (profile) {
-      reset({
-        first_name: profile.first_name || "",
-        last_name: profile.last_name || "",
-        phone: profile.phone || "",
-      })
-    }
-  }, [profile, reset])
-
-  const onSubmit = async (data: ProfileFormData) => {
-    setIsLoading(true)
-    try {
-      await updateProfile(data)
-      await refreshUser()
-      toast.success(t("profileUpdated"))
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update profile")
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -158,32 +122,30 @@ export default function ProfilePage() {
               </h2>
             </div>
             
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("firstName")}</Label>
-                  <Input id="first_name" {...register("first_name")} className="h-11 rounded-xl" />
-                  {errors.first_name && <p className="text-xs text-destructive">{errors.first_name.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("lastName")}</Label>
-                  <Input id="last_name" {...register("last_name")} className="h-11 rounded-xl" />
-                  {errors.last_name && <p className="text-xs text-destructive">{errors.last_name.message}</p>}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("phone")}</Label>
-                <Input id="phone" type="tel" {...register("phone")} className="h-11 rounded-xl" />
-                {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
+            <div className="grid gap-6">
+              <div className="grid gap-1.5">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground opacity-60">{t("firstName")}</p>
+                <p className="text-lg font-medium">{profile?.first_name || "—"}</p>
               </div>
               
-              <div className="pt-2">
-                <Button type="submit" disabled={isLoading} className="h-11 rounded-xl px-8 font-semibold shadow-sm w-full sm:w-auto">
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t("updateProfile")}
-                </Button>
+              <div className="grid gap-1.5">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground opacity-60">{t("lastName")}</p>
+                <p className="text-lg font-medium">{profile?.last_name || "—"}</p>
               </div>
-            </form>
+              
+              <div className="grid gap-1.5">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground opacity-60">{t("phone")}</p>
+                <p className="text-lg font-medium">{profile?.phone || "—"}</p>
+              </div>
+              
+              <div className="pt-4 border-t border-border/50">
+                <Link href="/profile/settings">
+                  <Button variant="outline" className="rounded-xl font-semibold">
+                    {t("settings")}
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
 
           <div className="card-premium p-6 sm:p-8">
