@@ -39,7 +39,7 @@ import type { Room, Hotel } from "@/lib/types"
 interface RoomFormState {
   hotel_id: number
   room_type: string
-  number_room: number
+  number_room: string
   price: number
   wifi: boolean
   photos: File[]
@@ -72,7 +72,7 @@ export default function AdminRoomsPage() {
   const [form, setForm] = useState<RoomFormState>({
     hotel_id: 0,
     room_type: "",
-    number_room: 0,
+    number_room: "",
     price: 0,
     wifi: true,
     photos: [],
@@ -90,7 +90,7 @@ export default function AdminRoomsPage() {
     if (!open) {
       resetPointerEvents()
       setEditingRoom(null)
-      setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photos: [] })
+      setForm({ hotel_id: 0, room_type: "", number_room: "", price: 0, wifi: true, photos: [] })
     }
   }
 
@@ -137,7 +137,7 @@ export default function AdminRoomsPage() {
       setIsOpen(false)
       resetPointerEvents()
       setEditingRoom(null)
-      setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photos: [] })
+      setForm({ hotel_id: 0, room_type: "", number_room: "", price: 0, wifi: true, photos: [] })
     } catch (err: any) {
       alert("Ошибка при сохранении: " + (err.message || "Unknown error"))
       console.error("Failed to save room:", err)
@@ -151,7 +151,7 @@ export default function AdminRoomsPage() {
     setForm({
       hotel_id: room.hotel_id,
       room_type: room.room_type,
-      number_room: Number(room.number_room),
+      number_room: room.number_room?.toString() || "",
       price: room.price,
       wifi: room.wifi,
       photos: [],
@@ -239,10 +239,9 @@ export default function AdminRoomsPage() {
                   type="number"
                   min="1"
                   placeholder="Пример: 101"
-                  value={isNaN(form.number_room) ? "" : form.number_room}
+                  value={form.number_room}
                   onChange={(e) => {
-                    const val = e.target.value === "" ? 0 : parseInt(e.target.value)
-                    setForm({ ...form, number_room: val })
+                    setForm({ ...form, number_room: e.target.value })
                   }}
                   required
                   className="rounded-xl"
@@ -373,7 +372,7 @@ export default function AdminRoomsPage() {
         {selectedHotel && (
           <Button onClick={() => {
             setEditingRoom(null)
-            setForm({ hotel_id: 0, room_type: "", number_room: 0, price: 0, wifi: true, photos: [] })
+            setForm({ hotel_id: 0, room_type: "", number_room: "", price: 0, wifi: true, photos: [] })
             setIsOpen(true)
           }}>
             <Plus className="mr-2 h-4 w-4" />
