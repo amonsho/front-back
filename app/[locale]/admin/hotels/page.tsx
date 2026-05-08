@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import { getHotels, createHotel, updateHotel, deleteHotel, getDeletedHotels, restoreHotel } from "@/lib/api/hotels"
 import { getImageUrl } from "@/lib/api/config"
+import { compressImage } from "@/lib/utils/image-compression"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -90,7 +91,8 @@ export default function AdminHotelsPage() {
           longitude: form.longitude ? parseFloat(form.longitude) : null,
         }
         if (form.photo) {
-          updateData.photo = form.photo
+          const compressed = await compressImage(form.photo)
+          updateData.photo = compressed
         }
         await updateHotel(editingHotel.id, updateData)
       } else {
@@ -99,6 +101,9 @@ export default function AdminHotelsPage() {
           setIsSubmitting(false)
           return
         }
+        
+        const compressed = await compressImage(form.photo)
+        
         await createHotel({
           name: form.name,
           address: form.address,
@@ -107,7 +112,7 @@ export default function AdminHotelsPage() {
           description: form.description,
           latitude: form.latitude ? parseFloat(form.latitude) : null,
           longitude: form.longitude ? parseFloat(form.longitude) : null,
-          photo: form.photo,
+          photo: compressed,
         })
       }
       await mutate()

@@ -7,6 +7,7 @@ import { getRoomsByHotel, createRoom, updateRoom, deleteRoom, getDeletedRooms, r
 import { RefreshCw } from "lucide-react"
 import { getHotels } from "@/lib/api/hotels"
 import { getImageUrl } from "@/lib/api/config"
+import { compressImage } from "@/lib/utils/image-compression"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -106,7 +107,10 @@ export default function AdminRoomsPage() {
           wifi: form.wifi,
         }
         if (form.photos.length > 0) {
-          updateData.photos = form.photos
+          const compressedPhotos = await Promise.all(
+            form.photos.map((photo) => compressImage(photo))
+          )
+          updateData.photos = compressedPhotos
         }
         await updateRoom(editingRoom.id, updateData)
       } else {
@@ -115,13 +119,18 @@ export default function AdminRoomsPage() {
           setIsSubmitting(false)
           return
         }
+
+        const compressedPhotos = await Promise.all(
+          form.photos.map((photo) => compressImage(photo))
+        )
+
         await createRoom({
           hotel_id: Number(selectedHotel),
           room_type: form.room_type,
           number_room: form.number_room,
           price: form.price,
           wifi: form.wifi,
-          photos: form.photos,
+          photos: compressedPhotos,
         })
       }
       await mutate()
