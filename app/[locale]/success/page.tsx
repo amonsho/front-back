@@ -57,7 +57,7 @@ function SuccessContent() {
             Оплата прошла, но не удалось обновить статус бронирования. Обратитесь в поддержку.
           </p>
           <Button asChild className="w-full rounded-xl h-11">
-            <Link href={`/${locale}/profile`}>Мои бронирования</Link>
+            <Link href={`/${locale}/profile/bookings`}>Мои бронирования</Link>
           </Button>
         </div>
       </div>
@@ -93,7 +93,7 @@ function SuccessContent() {
         </div>
         <div className="flex flex-col gap-3">
           <Button asChild className="w-full rounded-xl h-11 font-semibold gap-2">
-            <Link href={`/${locale}/profile`}>
+            <Link href={`/${locale}/profile/bookings`}>
               <Calendar className="h-4 w-4" />
               Мои бронирования
             </Link>
